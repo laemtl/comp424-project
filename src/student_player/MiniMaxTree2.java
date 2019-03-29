@@ -7,7 +7,7 @@ import java.util.List;
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoMove;
 
-public class MiniMaxTree {
+public class MiniMaxTree2 {
 
 	private PentagoBoardState state;
     private List<MiniMaxTree> children;
