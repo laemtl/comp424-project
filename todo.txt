@@ -1,0 +1,9 @@
+pb with 3 levels
+pb w/ heuristic
+Favorier les mouvements sur même ligne
+diag
+swap
+alpha beta
+
+meilleur tactique de jeu pour faire 5 rapido
+
