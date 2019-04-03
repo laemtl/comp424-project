@@ -18,6 +18,8 @@ public class Main {
 		int tr = 1;
 		int bl = 2;
 		int br = 3;
+		int w = 0;
+		int b = 1;
 		
 		PentagoBoardState state1 = BoardFactory.createState(new int[][]{
 			{1, 1, tl, tr},
@@ -31,21 +33,14 @@ public class Main {
 		});
 		PentagoBoardState state2 = (PentagoBoardState)state1.clone();
 
-		state1.processMove(BoardFactory.createMove(new int[] {2, 4, tl, tr}, 0));
-		state2.processMove(BoardFactory.createMove(new int[] {3, 1, tl, bl}, 0));
+		state1.processMove(BoardFactory.createMove(new int[] {2, 4, tl, tr, w}));
+		state2.processMove(BoardFactory.createMove(new int[] {3, 1, tl, bl, w}));
 
 		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state1)));
 	    System.out.println(state1);
 
 		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state2)));
 	    System.out.println(state2);
-		
-		/*
-		Move myMove = MyTools.getMove(0, boardState1);
-		
-		System.out.println("Board state");
-	    System.out.println(boardState1);
-		*/
 
 	}
 }
