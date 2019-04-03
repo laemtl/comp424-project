@@ -1,5 +1,8 @@
 package student_player;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import boardgame.BoardState;
 import boardgame.Move;
 import pentago_swap.PentagoBoard;
@@ -33,8 +36,8 @@ public class Main {
 		});
 		PentagoBoardState state2 = (PentagoBoardState)state1.clone();
 
-		state1.processMove(BoardFactory.createMove(new int[] {2, 4, tl, tr, w}));
-		state2.processMove(BoardFactory.createMove(new int[] {3, 1, tl, bl, w}));
+		state1.processMove(BoardFactory.createMove(new int[] {2, 4, tl, tr}, w));
+		state2.processMove(BoardFactory.createMove(new int[] {3, 1, tl, bl}, w));
 
 		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state1)));
 	    System.out.println(state1);
@@ -42,5 +45,22 @@ public class Main {
 		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state2)));
 	    System.out.println(state2);
 
+	    Node<Integer> node = new Node<>(0, () -> {
+	    	List<Node<Integer>> children = new ArrayList<>();
+	    	children.add(new Node<>(1, () -> new ArrayList<>()));
+	    	children.add(new Node<>(2, () -> new ArrayList<>()));
+	    	children.add(new Node<>(3, () -> new ArrayList<>()));
+	    	return children;
+	    });
+	    
+	    String result = node.reduce((value, folds) -> {
+	    	String str = "";
+	    	for (String fold: folds) {
+	    		str += (str.length() == 0 ? "" : ", ") + fold;
+	    	}
+	    	str = str.length() != 0 ? String.format(", children: {%s}", str) : str;
+	    	return String.format("Node(%s%s)", value.toString(), str);
+	    });
+	    System.out.println(result);
 	}
 }

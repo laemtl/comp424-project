@@ -7,12 +7,11 @@ import pentago_swap.PentagoMove;
 import pentago_swap.PentagoBoardState.Quadrant;
 
 public class BoardFactory {
-	public static PentagoMove createMove(int[] move) {
+	public static PentagoMove createMove(int[] move, int player) {
 		int x = move[0];
 		int y = move[1];
 		Quadrant q1 = Quadrant.values()[move[2]];
 		Quadrant q2 = Quadrant.values()[move[3]];
-		int player = move[4];
 		return new PentagoMove(new PentagoCoord(x, y), q1, q2, player);
 	}
 	
@@ -23,7 +22,7 @@ public class BoardFactory {
 		int player = 0;
 		
 		for (int i = 0; i < moves.length; i++) {
-			boardState.processMove(BoardFactory.createMove(moves[i]));
+			boardState.processMove(BoardFactory.createMove(moves[i], player));
 			player = player == 0 ? 1 : 0;
 		}
 		
