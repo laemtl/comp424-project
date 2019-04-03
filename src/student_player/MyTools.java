@@ -55,8 +55,8 @@ public class MyTools {
 		    	MiniMaxTree max = null;
 			    for (MiniMaxTree child : list) {
 			    	if(depth == 1) {
-			    		//System.out.println("child score : " + child.getScore());
-			    		//System.out.println(child.getState());			
+			    		System.out.println("child score : " + child.getScore());
+			    		System.out.println(child.getState());			
 		    		}	
 			    	if ( max == null || max.compareTo(child) < 0) {
 			    		max = child;
