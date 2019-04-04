@@ -1,6 +1,7 @@
 package student_player;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import boardgame.BoardState;
@@ -44,23 +45,12 @@ public class Main {
 
 		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state2)));
 	    System.out.println(state2);
-
-	    Node<Integer> node = new Node<>(0, () -> {
-	    	List<Node<Integer>> children = new ArrayList<>();
-	    	children.add(new Node<>(1, () -> new ArrayList<>()));
-	    	children.add(new Node<>(2, () -> new ArrayList<>()));
-	    	children.add(new Node<>(3, () -> new ArrayList<>()));
-	    	return children;
-	    });
 	    
-	    String result = node.reduce((value, folds) -> {
-	    	String str = "";
-	    	for (String fold: folds) {
-	    		str += (str.length() == 0 ? "" : ", ") + fold;
-	    	}
-	    	str = str.length() != 0 ? String.format(", children: {%s}", str) : str;
-	    	return String.format("Node(%s%s)", value.toString(), str);
-	    });
+	    Node<Integer> node = Node.expand(
+	    		n -> new Pair<>(n, Arrays.asList(n + 1, n + 2, n + 3)), 
+	    		0);
+	    
+	    String result = node.map(x -> x * x).truncateAtDepth(3).toString();
 	    System.out.println(result);
 	}
 }
