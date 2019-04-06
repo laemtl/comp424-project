@@ -39,30 +39,35 @@ public class Main {
 		//state.processMove(move5);	
 
 
-		PentagoMove myMove = MyTools2.getMove(1, state);
+		MinimaxResult result = MyTools2.minimax(1, state, 2);
+		PentagoMove myMove = result.moves.get(0);
 		int v= HeuristicFunction.compute(1, state);
 		int score = HeuristicFunction.compute(1, MyTools2.applyMove(myMove, state));
 	
-		
+		/*
 		System.out.println("selected score : " + score);
-		System.out.println(MyTools2.applyMove(myMove, state));			
-		System.out.println("Move : " + myMove.getMoveCoord().getX() + " " + myMove.getMoveCoord().getY());
-		
+		System.out.println(myMove.toPrettyString());
+		System.out.println(MyTools2.applyMove(myMove, state));
+		System.out.println(result);
+		//System.out.println("Move : " + myMove.getMoveCoord().getX() + " " + myMove.getMoveCoord().getY());
+		//*/
 
-		/*System.out.println(HeuristicFunction.compute(1, MyTools2.applyMove(move4, boardState)));
-		System.out.println(MyTools2.applyMove(move4, boardState));
+		/*
+		System.out.println(HeuristicFunction.compute(1, MyTools2.applyMove(move4, state)));
+		System.out.println(MyTools2.applyMove(move4, state));
 
-		System.out.println(HeuristicFunction.compute(1, MyTools2.applyMove(move5, boardState)));
-		System.out.println(MyTools2.applyMove(move5, boardState));
+		System.out.println(HeuristicFunction.compute(1, MyTools2.applyMove(move5, state)));
+		System.out.println(MyTools2.applyMove(move5, state));
 
-		System.out.println(HeuristicFunction.compute(1, MyTools2.applyMove(move6, MyTools2.applyMove(move4, boardState))));
-		System.out.println(MyTools2.applyMove(move6, MyTools2.applyMove(move4, boardState)));
+		System.out.println(HeuristicFunction.compute(1, MyTools2.applyMove(move6, MyTools2.applyMove(move4, state))));
+		System.out.println(MyTools2.applyMove(move6, MyTools2.applyMove(move4, state)));
+		//*/
 		
-		
-		
+		/*
 		System.out.println("Board state");
 	    System.out.println(boardState);
-	    System.out.println(v);*/
+	    System.out.println(v);
+	    */
 	    
 	    /*
 		int tl = 0;
@@ -94,7 +99,7 @@ public class Main {
 
 		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state2)));
 		System.out.println(state2);
-		*/
+		//*/
 	}
 }
 

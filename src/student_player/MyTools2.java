@@ -34,7 +34,7 @@ public class MyTools2 {
 	public static String movesToString(List<PentagoMove> moves) {
 		String result = "";
 		for (PentagoMove move: moves) {
-			result += move.toPrettyString();
+			result += move.toPrettyString() + "\n";
 		}
 		return result;
 	}
@@ -47,42 +47,64 @@ public class MyTools2 {
     
 	public static PentagoMove getMove(int player_id, PentagoBoardState state) {
 		int depth = 2;
-		
+		return MyTools2.minimax(player_id, state, depth).moves.get(0);
+	}
+    
+	public static MinimaxResult minimax(int player_id, PentagoBoardState state, int depth) {
 		ToIntFunction<PentagoBoardState> heuristic = state2 -> HeuristicFunction.compute(player_id, state2);
-		MinimaxResult result = MyTools2.minimax(heuristic, 1, depth, state, new ArrayList<PentagoMove>(), Integer.MIN_VALUE, Integer.MAX_VALUE);
+		MinimaxResult result = MyTools2.minimaxHelper(heuristic, true, depth, state, new ArrayList<PentagoMove>(), Integer.MIN_VALUE, Integer.MAX_VALUE);
 		
 		System.out.println(count);
-		return result.moves.get(0);
+		return result;
 	}
 	
 
 	static int count = 0;
-	public static MinimaxResult minimax(ToIntFunction<PentagoBoardState> heuristic, int multiple, int depth, PentagoBoardState state, List<PentagoMove> previousMoves, int alpha, int beta) {		
-		List<PentagoMove> moves = MyTools2.randomSubList(2, state.getAllLegalMoves());
+	private static MinimaxResult minimaxHelper(ToIntFunction<PentagoBoardState> heuristic, boolean isMaximizing, int depth, PentagoBoardState state, List<PentagoMove> previousMoves, int alpha, int beta) {		
+		List<PentagoMove> moves;
+		if (depth == 1) {
+			List<PentagoMove> allMoves = state.getAllLegalMoves();
+			moves = MyTools2.randomSubList(2, allMoves);
+			for (PentagoMove move: allMoves) {
+				if (heuristic.applyAsInt(MyTools2.applyMove(move, state)) <= 1970) {
+					moves.add(move);
+				}
+				if (moves.size() >= 4) {
+					break;
+				}
+			}
+		} else {
+			moves = MyTools2.randomSubList(3, state.getAllLegalMoves());
+		}
+		//List<PentagoMove> moves = state.getAllLegalMoves();
 		
 		if (depth == 0 || moves.isEmpty()) {
 			MinimaxResult result = new MinimaxResult(heuristic.applyAsInt(state), state, MyTools2.cloneList(previousMoves));
-			//map.put(key, result);
+
+			//*
+			System.out.println("Depth:" + depth);
+			System.out.println(result);
+			System.out.println();
+			//*/
+			
 	    	return result;
 	    	
 	    } else {
-	    	MinimaxResult result = new MinimaxResult(Integer.MIN_VALUE, state, null);
+	    	MinimaxResult result = null;
 	    	for (PentagoMove move: moves) {
 	    		count++;
 	    		List<PentagoMove> newMoves = MyTools2.cloneList(previousMoves);
 	    		newMoves.add(move);
 	    		PentagoBoardState newState = (PentagoBoardState)state.clone();
 	    		newState.processMove(move);
-	    		MinimaxResult newResult = MyTools2.minimax(heuristic, -multiple, depth - 1, newState, newMoves, alpha, beta);
+	    		MinimaxResult newResult = MyTools2.minimaxHelper(heuristic, !isMaximizing, depth - 1, newState, newMoves, alpha, beta);
 	    		
-	    		int newScore = multiple * newResult.score;
-	    		
-	    		if (newScore > result.score) {
-	    			result = newResult;
+	    		if (result == null || (!isMaximizing && newResult.score < result.score) || (isMaximizing && newResult.score > result.score)) {
+	    			result = newResult.clone();
 	    		}
 	    		
 	    		// max case
-	    		if(multiple > 0) {
+	    		if(isMaximizing) {
 	    			alpha = Math.max(alpha, result.score);
 	    		} else {
 	    			beta = Math.min(beta, result.score);
@@ -90,8 +112,13 @@ public class MyTools2 {
 	    		
 	    		//if(beta <= alpha) break;
 	    	}
+
+	    	//*
+			System.out.println("Depth:" + depth);
+			System.out.println(result);
+			System.out.println();
+	    	//*/
 	    	
-			//map.put(key, result);
 	    	return result;
 	    	
 	    }
@@ -114,7 +141,13 @@ class MinimaxResult {
 	
 	public String toString() {
 		String result = "";
-		
+		result += "Score:" + score + "\n";
+		result += MyTools2.movesToString(moves) + "\n";
+		result += state.toString();
 		return result;
+	}
+	
+	public MinimaxResult clone() {
+		return new MinimaxResult(score, (PentagoBoardState)state.clone(), MyTools2.cloneList(moves));
 	}
 }
