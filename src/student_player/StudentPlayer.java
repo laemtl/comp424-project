@@ -28,7 +28,8 @@ public class StudentPlayer extends PentagoPlayer {
         // strategies...
         //MyTools.getSomething();
     	
-    	Move myMove = MyTools.getMove(getColor(), boardState);
+    	//Move myMove = MyTools.getMove(getColor(), boardState);
+    	Move myMove = MyTools2.getMove(getColor(), boardState);
     	        
         // Return your move to be processed by the server.
         return myMove;

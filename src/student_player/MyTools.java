@@ -1,11 +1,7 @@
 package student_player;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoMove;
@@ -13,10 +9,9 @@ import pentago_swap.PentagoBoardState.Piece;
 import pentago_swap.PentagoBoardState.Quadrant;
 
 public class MyTools {
-	
 	// Override of the core function to eliminate quadrant swapping
-	public static ArrayList<PentagoMove> getPossibleMoves(PentagoBoardState state) {
-        ArrayList<PentagoMove> legalMoves = new ArrayList<>();
+	public static List<PentagoMove> getPossibleMoves(PentagoBoardState state) {
+		List<PentagoMove> legalMoves = new ArrayList<>();
         for (int i = 0; i < PentagoBoardState.BOARD_SIZE; i++) { //Iterate through positions on board
             for (int j = 0; j < PentagoBoardState.BOARD_SIZE; j++) {
                 if (state.getPieceAt(i, j) == Piece.EMPTY) {
@@ -55,8 +50,8 @@ public class MyTools {
 		    	MiniMaxTree max = null;
 			    for (MiniMaxTree child : list) {
 			    	if(depth == 1) {
-			    		//System.out.println("child score : " + child.getScore());
-			    		//System.out.println(child.getState());			
+			    		System.out.println("child score : " + child.getScore());
+			    		System.out.println(child.getState());			
 		    		}	
 			    	if ( max == null || max.compareTo(child) < 0) {
 			    		max = child;

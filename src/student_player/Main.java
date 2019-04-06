@@ -1,5 +1,11 @@
 package student_player;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+
 import boardgame.BoardState;
 import boardgame.Move;
 import pentago_swap.PentagoBoard;
@@ -9,28 +15,32 @@ import pentago_swap.PentagoMove;
 import pentago_swap.PentagoBoardState.Quadrant;
 
 public class Main {
+
 	public static void main(String[] args) {
-		PentagoBoard board = new PentagoBoard();
-		PentagoBoardState boardState = (PentagoBoardState) board.getBoardState();
-		
 		// TL, TR, BL, BR
 		// Study Case
-		
-		PentagoMove move1 = new PentagoMove(new PentagoCoord(1, 1), Quadrant.TL, Quadrant.TR, 0);
-		PentagoMove move2 = new PentagoMove(new PentagoCoord(4, 2), Quadrant.TR, Quadrant.BL, 1);
-		PentagoMove move3 = new PentagoMove(new PentagoCoord(3, 0), Quadrant.TL, Quadrant.TR, 0);
-		PentagoMove move4 = new PentagoMove(new PentagoCoord(2, 0), Quadrant.TL, Quadrant.TR, 1);
-		
-		boardState.processMove(move1);
-		boardState.processMove(move2);	
-		boardState.processMove(move3);
-		boardState.processMove(move4);
-		
-		Move myMove = MyTools.getMove(0, boardState);
-		
-		System.out.println("Board state");
-	    System.out.println(boardState);
+		int tl = 0;
+		int tr = 1;
+		int bl = 2;
+		int br = 3;
+		int w = 0;
+		int b = 1;
 
+		PentagoBoardState state1 = BoardFactory
+				.createState(new int[][] { { 1, 1, tl, tr }, { 0, 0, tl, tr }, { 0, 0, tl, tr }, { 2, 5, tl, br },
+						{ 0, 4, tl, tr }, { 1, 2, tl, tr }, { 0, 5, tl, tr }, { 0, 4, tl, tr }, });
+		PentagoBoardState state2 = (PentagoBoardState) state1.clone();
 
+		//state1.processMove(BoardFactory.createMove(new int[] { 2, 4, tl, tr }, w));
+		//state2.processMove(BoardFactory.createMove(new int[] { 3, 1, tl, bl }, w));
+
+		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state1)));
+		System.out.println(state1);
+
+		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state2)));
+		System.out.println(state2);
+
+		//Random random = new Random();
+		//Node<Integer> randomTree = Node.expand(n -> new Pair<>(n, Arrays.asList(random.nextInt(140), random.nextInt(10), random.nextInt(10))), 0);
 	}
 }

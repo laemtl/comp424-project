@@ -100,9 +100,10 @@ public class HeuristicFunction {
     	
     	// Main player is black
     	if(player_id == 1) {
-    		player_factor = -1;
-        	player_weight[0] = 1.2f;
-        	player_weight[1] = 1;
+    		player_factor *= -1;
+    		float swap = player_weight[0];
+        	player_weight[0] = player_weight[1];
+        	player_weight[1] = swap;
     	}
     	
     	// white 0, black 1
@@ -123,12 +124,30 @@ public class HeuristicFunction {
 			// Triplet Maximizer
 			// If 4 on the same level
 			// Multiply by level_factor
-			if(Math.abs(rowScore[0]) > pattern_weight[26]) rowScore[0] *= level_factor;
-			if(Math.abs(colScore[0]) > pattern_weight[26]) colScore[0] *= level_factor;
-			if(Math.abs(diagScore[0]) > pattern_weight[26]) diagScore[0] *= level_factor;
-			if(Math.abs(rowScore[1]) > pattern_weight[26]) rowScore[1] *= level_factor;
-			if(Math.abs(colScore[1]) > pattern_weight[26]) colScore[1] *= level_factor;
-			if(Math.abs(diagScore[1]) > pattern_weight[26]) diagScore[1] *= level_factor;
+
+			if(Math.abs(rowScore[0]) > pattern_weight[26]) {
+				rowScore[0] *= level_factor;
+			}
+			
+			if(Math.abs(colScore[0]) > pattern_weight[26]) {
+				colScore[0] *= level_factor;
+			}
+			
+			if(Math.abs(diagScore[0]) > pattern_weight[26]) {
+				diagScore[0] *= level_factor;
+			}
+			
+			if(Math.abs(rowScore[1]) > pattern_weight[26]) {
+				rowScore[1] *= level_factor;
+			}
+			
+			if(Math.abs(colScore[1]) > pattern_weight[26]) {
+				colScore[1] *= level_factor;
+			}
+			
+			if(Math.abs(diagScore[1]) > pattern_weight[26]) {
+				diagScore[1] *= level_factor;
+			}
 			
 			value += (rowScore[0] + colScore[0] + diagScore[0]) * player_weight[0];
 			value += (rowScore[1] + colScore[1] + diagScore[1]) * player_weight[1];
