@@ -10,9 +10,7 @@ import boardgame.BoardState;
 import boardgame.Move;
 import pentago_swap.PentagoBoard;
 import pentago_swap.PentagoBoardState;
-import pentago_swap.PentagoCoord;
 import pentago_swap.PentagoMove;
-import pentago_swap.PentagoBoardState.Quadrant;
 
 public class Main {
 
@@ -22,48 +20,6 @@ public class Main {
 		PentagoBoard board = new PentagoBoard();
 		PentagoBoardState state = (PentagoBoardState) board.getBoardState();
 		
-		PentagoMove move1 = new PentagoMove(new PentagoCoord(0, 0), Quadrant.TL, Quadrant.TR, 0);
-		PentagoMove move2 = new PentagoMove(new PentagoCoord(1, 1), Quadrant.TL, Quadrant.BL, 1);
-		PentagoMove move3 = new PentagoMove(new PentagoCoord(1, 4), Quadrant.TL, Quadrant.TR, 0);
-		//PentagoMove move4 = new PentagoMove(new PentagoCoord(3, 1), Quadrant.TL, Quadrant.TR, 1);
-		//PentagoMove move5 = new PentagoMove(new PentagoCoord(2, 2), Quadrant.TL, Quadrant.TR, 1);
-		//PentagoMove move6 = new PentagoMove(new PentagoCoord(2, 5), Quadrant.TL, Quadrant.TR, 0);
-		//PentagoMove move4 = new PentagoMove(new PentagoCoord(0, 1), Quadrant.TL, Quadrant.TR, 1);
-		//PentagoMove move5 = new PentagoMove(new PentagoCoord(2, 5), Quadrant.TL, Quadrant.TR, 0);
-		
-		
-		state.processMove(move1);
-		state.processMove(move2);	
-		state.processMove(move3);	
-		//state.processMove(move4);	
-		//state.processMove(move5);	
-
-
-
-		PentagoMove myMove = MyTools2.getMove(1, state);
-		//int v = HeuristicFunction.compute(1, state);
-		int score = HeuristicFunction.compute(1, MyTools2.applyMove(myMove, state));
-	
-		
-		System.out.println("selected score : " + score);
-		System.out.println(MyTools2.applyMove(myMove, state));			
-		System.out.println("Move : " + myMove.getMoveCoord().getX() + " " + myMove.getMoveCoord().getY());
-		
-		
-		
-		System.out.println("Board state");
-	    System.out.println(state);
-	    //System.out.println(v);
-
-		
-		
-		/*
-		System.out.println("Board state");
-	    System.out.println(boardState);
-	    System.out.println(v);
-	    */
-	    
-	    /*
 		int tl = 0;
 		int tr = 1;
 		int bl = 2;
@@ -73,26 +29,43 @@ public class Main {
 
 		PentagoBoardState state1 = BoardFactory
 			.createState(new int[][] { 
-				{ 1, 1, tl, tr }, 
-				{ 0, 0, tl, tr }, 
-				{ 0, 0, tl, tr }, 
-				{ 2, 5, tl, br },
-				{ 0, 4, tl, tr }, 
+				{ 2, 5, bl, br }, 
+				{ 1, 4, tl, tr }, 
 				{ 1, 2, tl, tr }, 
-				{ 0, 5, tl, tr }, 
-				{ 0, 4, tl, tr }
+				{ 0, 5, tl, tr },
+				{ 2, 0, tl, tr }, 
+				{ 2, 4, tl, tr }, 
+				{ 0, 5, tl, br },
+				{ 4, 3, bl, br }, 
+				{ 1, 5, tl, tr },
+				{ 2, 2, tl, tr }, 
+				{ 0, 4, tl, tr },
+				{ 3, 1, tl, tr },
+				{ 4, 4, tl, br }, 
+				{ 3, 0, tl, br },
+				{ 0, 1, tl, br }, 
+				{ 4, 4, tl, br },
+				{ 2, 1, tl, bl }, 
+				{ 1, 3, tr, bl },
+				{ 3, 4, tl, br }, 
+				{ 1, 5, tl, bl }, 
+				{ 1, 3, tl, br },
+				{ 4, 0, tl, br }, 
+				{ 3, 0, tl, br }
+				//{ 5, 4, tr, br }
+				//{ 3, 2, tl, tr }
+				//{ 0, 0, tl, tr }
+				//{ 3, 3, tl, tr }
 			}
 		);
 		PentagoBoardState state2 = (PentagoBoardState) state1.clone();
-
-		//state1.processMove(BoardFactory.createMove(new int[] { 2, 4, tl, tr }, w));
-		//state2.processMove(BoardFactory.createMove(new int[] { 3, 1, tl, bl }, w));
-
-		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state1)));
-		System.out.println(state1);
-
-		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state2)));
 		System.out.println(state2);
-		//*/
+
+		PentagoMove myMove = MyTools2.getMove(1, state2);
+		int score = HeuristicFunction.compute(1, MyTools2.applyMove(myMove, state2));
+		
+		System.out.println("selected score : " + score);
+		System.out.println(MyTools2.applyMove(myMove, state2));			
+		System.out.println("Move : " + myMove.getMoveCoord().getX() + " " + myMove.getMoveCoord().getY());
 	}
 }
