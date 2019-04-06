@@ -52,7 +52,7 @@ public class HeuristicFunction {
 			200000
 		},
 		{
-			-10000000,
+			-20000000,
 			-20,
 			-10,
 			-200,
@@ -303,13 +303,12 @@ class Sixplet {
 			// We have a white sequence
 			// Count consecutive color : getwCount(true)
 
-			if(t1.getwCount() == 3 || t2.getwCount() == 3) {
+			//if(t1.getwCount() == 3 || t2.getwCount() == 3) {
 				sequences[0] = t1.getwCount(true) + t2.getwCount(true);
-				
 				return;
-			} else {
+			/*} else {
 				sequences[0] = Math.max(t1.getwCount(true), t2.getwCount(true));
-			}
+			}*/
 		} else {
 			// color = black
 			// We have a black sequence
