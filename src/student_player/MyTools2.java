@@ -31,14 +31,15 @@ public class MyTools2 {
     
 	public static PentagoMove getMove(int player_id, PentagoBoardState state) {
 		int depth = 2;
-		Map<String, MinimaxResult> map = new HashMap<>();
+		
 		ToIntFunction<PentagoBoardState> heuristic = state2 -> HeuristicFunction.compute(player_id, state2);
 		PentagoMove bestMove = null;
 		MinimaxResult bestResult = null;
 		int bestScore = Integer.MIN_VALUE;
+		
 		for (PentagoMove move: state.getAllLegalMoves()) {
     		PentagoBoardState newState = MyTools2.applyMove(move, state);
-    		MinimaxResult result = MyTools2.minimax(heuristic, -1, depth - 1, newState, map);
+    		MinimaxResult result = MyTools2.minimax(heuristic, -1, depth - 1, newState, Integer.MIN_VALUE, Integer.MAX_VALUE);
 			if (result.score > bestScore) {
 				bestScore = result.score;
 				bestMove = move;
@@ -49,36 +50,48 @@ public class MyTools2 {
 		System.out.println(bestResult.move.toPrettyString());
 		System.out.println(MyTools2.applyMove(bestResult.move, bestResult.state));
 		System.out.println(bestMove.toPrettyString());
-		
+    	System.out.println(count);
+    	
 		return bestMove;
 	}
 	
-	public static MinimaxResult minimax(ToIntFunction<PentagoBoardState> heuristic, int multiple, int depth, PentagoBoardState state, Map<String, MinimaxResult> map) {
-		String key = state.toString();
-		if (map.containsKey(key)) {
-			return map.get(key);
-		}
-		
+	static int count = 0;
+	public static MinimaxResult minimax(ToIntFunction<PentagoBoardState> heuristic, int multiple, int depth, PentagoBoardState state, int alpha, int beta) {
 		List<PentagoMove> moves = state.getAllLegalMoves();
 		
-		if (depth == 0 || state.gameOver() || moves.isEmpty()) {
+		if (depth == 0 || moves.isEmpty()) {
 			MinimaxResult result = new MinimaxResult(heuristic.applyAsInt(state), null, state);
-			//map.put(key, result);
 	    	return result;
+	    	
 	    } else {
 	    	MinimaxResult result = new MinimaxResult(Integer.MIN_VALUE, null, state);
 	    	for (PentagoMove move: moves) {
+	    		count++;
 	    		PentagoBoardState newState = (PentagoBoardState)state.clone();
 	    		newState.processMove(move);
-	    		MinimaxResult newResult = MyTools2.minimax(heuristic, -multiple, depth - 1, newState, map);
+	    		MinimaxResult newResult = MyTools2.minimax(heuristic, -multiple, depth - 1, newState, alpha, beta);
+	    		
+	    		
 	    		int newScore = multiple * newResult.score;
+	    		
+	    		
 	    		if (newScore > result.score) {
 	    			result.score = newScore;
 	    			result.move = move;
 	    		}
+	    		
+	    		// max case
+	    		if(multiple > 0) {
+	    			alpha = Math.max(alpha, result.score);
+	    		} else {
+	    			beta = Math.min(beta, result.score);
+	    		}
+	    		
+	    		//if(beta <= alpha) break;
 	    	}
 			//map.put(key, result);
 	    	return result;
+	    	
 	    }
 	}
 }
