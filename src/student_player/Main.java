@@ -3,6 +3,8 @@ package student_player;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 import boardgame.BoardState;
 import boardgame.Move;
@@ -29,8 +31,8 @@ public class Main {
 						{ 0, 4, tl, tr }, { 1, 2, tl, tr }, { 0, 5, tl, tr }, { 0, 4, tl, tr }, });
 		PentagoBoardState state2 = (PentagoBoardState) state1.clone();
 
-		state1.processMove(BoardFactory.createMove(new int[] { 2, 4, tl, tr }, w));
-		state2.processMove(BoardFactory.createMove(new int[] { 3, 1, tl, bl }, w));
+		//state1.processMove(BoardFactory.createMove(new int[] { 2, 4, tl, tr }, w));
+		//state2.processMove(BoardFactory.createMove(new int[] { 3, 1, tl, bl }, w));
 
 		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state1)));
 		System.out.println(state1);
@@ -38,9 +40,7 @@ public class Main {
 		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state2)));
 		System.out.println(state2);
 
-		Node<Integer> node = Node.expand(n -> new Pair<>(n, Arrays.asList(n + 1, n + 2, n + 3)), 0);
-
-		String result = node.map(x -> x * x).truncateAtDepth(3).toString();
-		System.out.println(result);
+		//Random random = new Random();
+		//Node<Integer> randomTree = Node.expand(n -> new Pair<>(n, Arrays.asList(random.nextInt(140), random.nextInt(10), random.nextInt(10))), 0);
 	}
 }
