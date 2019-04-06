@@ -25,9 +25,9 @@ public class Main {
 		PentagoMove move1 = new PentagoMove(new PentagoCoord(0, 0), Quadrant.TL, Quadrant.TR, 0);
 		PentagoMove move2 = new PentagoMove(new PentagoCoord(1, 1), Quadrant.TL, Quadrant.BL, 1);
 		PentagoMove move3 = new PentagoMove(new PentagoCoord(1, 4), Quadrant.TL, Quadrant.TR, 0);
-		PentagoMove move4 = new PentagoMove(new PentagoCoord(3, 1), Quadrant.TL, Quadrant.TR, 1);
-		PentagoMove move5 = new PentagoMove(new PentagoCoord(2, 2), Quadrant.TL, Quadrant.TR, 1);
-		PentagoMove move6 = new PentagoMove(new PentagoCoord(2, 5), Quadrant.TL, Quadrant.TR, 0);
+		//PentagoMove move4 = new PentagoMove(new PentagoCoord(3, 1), Quadrant.TL, Quadrant.TR, 1);
+		//PentagoMove move5 = new PentagoMove(new PentagoCoord(2, 2), Quadrant.TL, Quadrant.TR, 1);
+		//PentagoMove move6 = new PentagoMove(new PentagoCoord(2, 5), Quadrant.TL, Quadrant.TR, 0);
 		//PentagoMove move4 = new PentagoMove(new PentagoCoord(0, 1), Quadrant.TL, Quadrant.TR, 1);
 		//PentagoMove move5 = new PentagoMove(new PentagoCoord(2, 5), Quadrant.TL, Quadrant.TR, 0);
 		
@@ -39,33 +39,29 @@ public class Main {
 		//state.processMove(move5);	
 
 
-		PentagoMove myMove = MyTools.getMove(1, state);
-		//int v= HeuristicFunction.compute(1, state);
-		//int score = HeuristicFunction.compute(1, MyTools2.applyMove(myMove, state));
+
+		PentagoMove myMove = MyTools2.getMove(1, state);
+		//int v = HeuristicFunction.compute(1, state);
+		int score = HeuristicFunction.compute(1, MyTools2.applyMove(myMove, state));
 	
 		
-		//System.out.println("selected score : " + score);
+		System.out.println("selected score : " + score);
 		System.out.println(MyTools2.applyMove(myMove, state));			
 		System.out.println("Move : " + myMove.getMoveCoord().getX() + " " + myMove.getMoveCoord().getY());
+		
+		
 		
 		System.out.println("Board state");
 	    System.out.println(state);
 	    //System.out.println(v);
 
-		/*System.out.println(HeuristicFunction.compute(1, MyTools2.applyMove(move4, boardState)));
-		System.out.println(MyTools2.applyMove(move4, boardState));
-
-		System.out.println(HeuristicFunction.compute(1, MyTools2.applyMove(move5, boardState)));
-		System.out.println(MyTools2.applyMove(move5, boardState));
-
-		System.out.println(HeuristicFunction.compute(1, MyTools2.applyMove(move6, MyTools2.applyMove(move4, boardState))));
-		System.out.println(MyTools2.applyMove(move6, MyTools2.applyMove(move4, boardState)));
 		
 		
-		
+		/*
 		System.out.println("Board state");
 	    System.out.println(boardState);
-	    System.out.println(v);*/
+	    System.out.println(v);
+	    */
 	    
 	    /*
 		int tl = 0;
@@ -97,19 +93,6 @@ public class Main {
 
 		System.out.println(String.format("Score: %d", HeuristicFunction.compute(0, state2)));
 		System.out.println(state2);
-		*/
+		//*/
 	}
 }
-
-
-
-/*child score : 30
---------------------------
-|   |   |   || w | b |   |
-|   | b |   ||   | w |   |
-|   |   |   ||   |   |   |
---------------------------
-| w |   |   ||   |   |   |
-|   |   |   ||   |   |   |
-|   |   |   ||   |   |   |
---------------------------*/
