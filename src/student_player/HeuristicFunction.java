@@ -137,6 +137,7 @@ public class HeuristicFunction {
 			value += (rowScore[0] + colScore[0] + diagScore[0]);
 			value += (rowScore[1] + colScore[1] + diagScore[1]);
 
+
 		}
 		
 		return value;
