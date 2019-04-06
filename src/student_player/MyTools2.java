@@ -33,24 +33,9 @@ public class MyTools2 {
 		int depth = 2;
 		Map<String, MinimaxResult> map = new HashMap<>();
 		ToIntFunction<PentagoBoardState> heuristic = state2 -> HeuristicFunction.compute(player_id, state2);
-		PentagoMove bestMove = null;
-		MinimaxResult bestResult = null;
-		int bestScore = Integer.MIN_VALUE;
-		for (PentagoMove move: state.getAllLegalMoves()) {
-    		PentagoBoardState newState = MyTools2.applyMove(move, state);
-    		MinimaxResult result = MyTools2.minimax(heuristic, -1, depth - 1, newState, map);
-			if (result.score > bestScore) {
-				bestScore = result.score;
-				bestMove = move;
-				bestResult = result;
-			}
-		}
-
-		System.out.println(bestResult.move.toPrettyString());
-		System.out.println(MyTools2.applyMove(bestResult.move, bestResult.state));
-		System.out.println(bestMove.toPrettyString());
+		MinimaxResult result = MyTools2.minimax(heuristic, 1, depth, state, map);
 		
-		return bestMove;
+		return result.move;
 	}
 	
 	public static MinimaxResult minimax(ToIntFunction<PentagoBoardState> heuristic, int multiple, int depth, PentagoBoardState state, Map<String, MinimaxResult> map) {
@@ -59,10 +44,15 @@ public class MyTools2 {
 			return map.get(key);
 		}
 		
-		List<PentagoMove> moves = state.getAllLegalMoves();
+		List<PentagoMove> moves = MyTools2.randomSubList(2, state.getAllLegalMoves());
 		
-		if (depth == 0 || state.gameOver() || moves.isEmpty()) {
+		if (depth == 0 || moves.isEmpty()) {
 			MinimaxResult result = new MinimaxResult(heuristic.applyAsInt(state), null, state);
+			System.out.println("Depth:" + depth);
+			System.out.println("Score:" + heuristic.applyAsInt(state));
+			System.out.println("No move:");
+			System.out.println(state);
+			System.out.println();
 			//map.put(key, result);
 	    	return result;
 	    } else {
@@ -75,8 +65,14 @@ public class MyTools2 {
 	    		if (newScore > result.score) {
 	    			result.score = newScore;
 	    			result.move = move;
+	    			result.state = newResult.state;
 	    		}
 	    	}
+			System.out.println("Depth:" + depth);
+			System.out.println("Score:" + heuristic.applyAsInt(MyTools2.applyMove(result.move, state)));
+			System.out.println(result.move.toPrettyString() + ":");
+			System.out.println(MyTools2.applyMove(result.move, state));
+			System.out.println();
 			//map.put(key, result);
 	    	return result;
 	    }
@@ -87,11 +83,11 @@ class MinimaxResult {
 	int score;
 	PentagoMove move;
 	/**
-	 * Represents the state before the move
+	 * Represents the back propagated state
 	 */
 	PentagoBoardState state;
+	
 	public MinimaxResult(int score, PentagoMove move, PentagoBoardState state) {
-		super();
 		this.score = score;
 		this.move = move;
 		this.state = state;
