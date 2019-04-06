@@ -23,6 +23,18 @@ public class MyTools2 {
 		return subList;
 	}
 	
+	public static <A> List<A> subList(int n, List<A> list) {
+		List<A> subList = new ArrayList<>();
+		int index = 0;
+		while (list.size() > 0 && subList.size() < n) {
+			A a = list.get(index);
+			list.remove(index);
+			subList.add(a);
+			index+=5;
+		}
+		return subList;
+	}
+	
 	public static PentagoBoardState applyMove(PentagoMove move, PentagoBoardState state) {
 		PentagoBoardState newState = (PentagoBoardState)state.clone();
 		newState.processMove(move);
@@ -35,7 +47,7 @@ public class MyTools2 {
 		ToIntFunction<PentagoBoardState> heuristic = state2 -> HeuristicFunction.compute(player_id, state2);
 		MinimaxResult result = MyTools2.minimax(heuristic, 1, depth, state, Integer.MIN_VALUE, Integer.MAX_VALUE);
 		
-		System.out.println(count);
+		System.out.println("AB count:" + count);
 		return result.move;
 	}
 	
@@ -79,7 +91,7 @@ public class MyTools2 {
 	    			beta = Math.min(beta, result.score);
 	    		}
 	    		
-	    		//if(beta <= alpha) break;
+	    		if(beta <= alpha) break;
 	    	}
 			System.out.println("Depth:" + depth);
 			System.out.println("Score:" + heuristic.applyAsInt(MyTools2.applyMove(result.move, state)));
