@@ -26,7 +26,7 @@ public class StudentPlayer extends PentagoPlayer {
         // You probably will make separate functions in MyTools.
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
-        //MyTools.getSomething();
+        // MyTools.getSomething();
     	
     	Move myMove = MyTools.getMove(getColor(), boardState);
     	        

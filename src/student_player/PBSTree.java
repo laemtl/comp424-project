@@ -42,10 +42,8 @@ public class PBSTree implements Cloneable {
     
 	private void generateChildren() {
 		children = new ArrayList<PBSTree>();
-		
-		if(state.gameOver()) return;
 			
-		for (PentagoMove move : MyTools.getPossibleMoves(state)) {
+		for (PentagoMove move : state.getAllLegalMoves()) {
 			PentagoBoardState newState = (PentagoBoardState) state.clone();
 			newState.processMove(move);	
 			children.add(new PBSTree(newState, move));

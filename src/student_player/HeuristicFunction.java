@@ -44,7 +44,7 @@ public class HeuristicFunction {
 	static int[][] scores = {
 		{	
 			5000000,
-			40,
+			20,
 			10,
 			200,
 			2000,
@@ -52,8 +52,8 @@ public class HeuristicFunction {
 			200000
 		},
 		{
-			-5000000,
-			-40,
+			-10000000,
+			-20,
 			-10,
 			-200,
 			-2000,
@@ -327,11 +327,11 @@ class Sixplet {
 	private int getwCentersCount() {
 		int centersCount = 0;
 		
-		if(t1.getCenter() == "w") {
+		if(t1.getCenter().equals("w")) {
 			centersCount += 1;
 		}
 		
-		if(t2.getCenter() == "w") {
+		if(t2.getCenter().equals("w")) {
 			centersCount += 1;
 		}
 		
@@ -341,11 +341,11 @@ class Sixplet {
 	private int getbCentersCount() {
 		int centersCount = 0;
 		
-		if(t1.getCenter() == "b") {
+		if(t1.getCenter().equals("b")) {
 			centersCount += 1;
 		}
 		
-		if(t2.getCenter() == "b") {
+		if(t2.getCenter().equals("b")) {
 			centersCount += 1;
 		}
 		

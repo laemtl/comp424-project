@@ -15,7 +15,7 @@ import pentago_swap.PentagoBoardState.Quadrant;
 public class MyTools {
 	
 	// Override of the core function to eliminate quadrant swapping
-	public static ArrayList<PentagoMove> getPossibleMoves(PentagoBoardState state) {
+	/*public static ArrayList<PentagoMove> getPossibleMoves(PentagoBoardState state) {
         ArrayList<PentagoMove> legalMoves = new ArrayList<>();
         for (int i = 0; i < PentagoBoardState.BOARD_SIZE; i++) { //Iterate through positions on board
             for (int j = 0; j < PentagoBoardState.BOARD_SIZE; j++) {
@@ -27,7 +27,7 @@ public class MyTools {
             }
         }
         return legalMoves;
-    }
+    }*/
 	
 	// Returns the optimal value a maximizer can obtain. 
 	// depth is the limit depth in game tree. 
@@ -35,7 +35,7 @@ public class MyTools {
     public static MiniMaxTree minimax(int depth, boolean isMax, PBSTree bsTree, int player_id) {
     	
     	// Terminating condition. i.e leaf node is reached or max depth reached
-	    if (depth == 0 || bsTree.getState().gameOver() || bsTree.getChildren().isEmpty()) {
+	    if (depth == 0 || bsTree.getChildren().isEmpty()) {
 	    	int score = HeuristicFunction.compute(player_id, bsTree.getState());
 	    	MiniMaxTree treeCopy = new MiniMaxTree(player_id, bsTree, score);
 	    	treeCopy.setMove(null);
@@ -51,10 +51,9 @@ public class MyTools {
 		    }
 		    
 		    if (isMax) {
-		    	
 		    	MiniMaxTree max = null;
 			    for (MiniMaxTree child : list) {
-			    	if(depth == 1) {
+			    	if(depth == 2) {
 			    		//System.out.println("child score : " + child.getScore());
 			    		//System.out.println(child.getState());			
 		    		}	
@@ -68,6 +67,9 @@ public class MyTools {
 		    } else {
 		    	MiniMaxTree min = null;
 			    for (MiniMaxTree child : list) {
+			    	//System.out.println("child score : " + child.getScore());
+			    	//System.out.println(child.getState());			
+		    		
 			    	if ( min == null || min.compareTo(child) > 0) {
 			    		min = child;
 			    	}
@@ -79,7 +81,7 @@ public class MyTools {
 	}
 
 	public static PentagoMove getMove(int player_id, PentagoBoardState boardState) {
-		
+				
 		// Save original out stream.
 		/*PrintStream originalOut = System.out;
         
@@ -98,7 +100,7 @@ public class MyTools {
         
         
         
-		int depth = 3;
+		int depth = 2;
 		PBSTree bsTree = new PBSTree(boardState);
 
 		// If there is a winning move do it!
