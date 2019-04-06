@@ -48,11 +48,6 @@ public class MyTools2 {
 		
 		if (depth == 0 || moves.isEmpty()) {
 			MinimaxResult result = new MinimaxResult(heuristic.applyAsInt(state), null, state);
-			System.out.println("Depth:" + depth);
-			System.out.println("Score:" + heuristic.applyAsInt(state));
-			System.out.println("No move:");
-			System.out.println(state);
-			System.out.println();
 			//map.put(key, result);
 	    	return result;
 	    } else {
@@ -68,11 +63,6 @@ public class MyTools2 {
 	    			result.state = newResult.state;
 	    		}
 	    	}
-			System.out.println("Depth:" + depth);
-			System.out.println("Score:" + heuristic.applyAsInt(MyTools2.applyMove(result.move, state)));
-			System.out.println(result.move.toPrettyString() + ":");
-			System.out.println(MyTools2.applyMove(result.move, state));
-			System.out.println();
 			//map.put(key, result);
 	    	return result;
 	    }
@@ -86,6 +76,7 @@ class MinimaxResult {
 	 * Represents the back propagated state
 	 */
 	PentagoBoardState state;
+	List<PentagoMove> moves = new ArrayList<>();
 	
 	public MinimaxResult(int score, PentagoMove move, PentagoBoardState state) {
 		this.score = score;
