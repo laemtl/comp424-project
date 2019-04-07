@@ -1,145 +1,65 @@
 package student_player;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
-import boardgame.Board;
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoBoardState.Piece;
 
 public class HeuristicFunction {
 	
-    // 0 : 2-in-a-row
-    // 1 : 3-in-a-row
-    // 2 : 4-in-a-row 	
-    // 3 : 5-in-a-row
-    // 4 : marble in center
-    // 5 : 3-in-a-row (same block)
-	
-	// detect hole
-	// place hole
-	// detect if placement is useless (3 in a row where we can't place more than 3)
-    
-    // never touch the 4 corners for opening
-    // Must play when my opponent have 4 in a row
-    // 4 in a row with both ends open will almost always win
-    
-    // align stones at last minute
-    // pattern 
-    // x0x0x0
-    // 00x0x0
-    // 0000x0
-    
-    // when opponent forms alignment, block where there is another stone 
-    // x00x0x0
-    // x00*0x0
-    
-    // heuristic should give more point for sparse alignment
-    // -> trick the opponent
-    
-    // logic to construct alignment on 2 different quarter
-    
-    // don’t  let  the  opponent  get  three  in  a  row  on  one  game block, 
-    // or you’ll be on the defensive
+    // 0 : win
+    // 1 : center
+    // 2 : 1-in-a-row 	
+    // 3 : 2-in-a-row
+    // 4 : 3-in-a-row
+    // 5 : 4-in-a-row
+    // 6 : 5-in-a-row or more
 
-	static int[][] scores = {
+	protected static int[][] scores = {
 		{	
-			5000000,
 			20,
-			10,
+			5,
+			50,
 			200,
-			2000,
-			20000,
-			200000
+			1500,
+			50000
 		},
 		{
-			-20000000,
 			-20,
-			-10,
+			-5,
+			-50,
 			-200,
-			-2000,
-			-20000,
-			-200000
+			-1500,
+			-50000
 		}
 	};
 	
     static int value;
-	private static int[][] rows_sequences;
-	private static int[][] cols_sequences;
-	private static int[][] diags_sequences;
+    static ArrayList<LineAnalytics> analytics;
 	   
-    static public int compute(int player_id, PentagoBoardState state) {	
-    	
+    static public int compute(int player_id, PentagoBoardState state) {	    	
     	if(state.gameOver()) {
-    		if(state.getWinner() == player_id) return scores[0][0];
-        	if(state.getWinner() == (1-player_id)) return scores[1][0];
+    		if(state.getWinner() == player_id) return Integer.MAX_VALUE;
+        	if(state.getWinner() == (1-player_id)) return Integer.MIN_VALUE;
         	
         	// Draw
         	return 0;    
     	} 
         			    			
-    	rows_sequences = new int[6][4];
-    	cols_sequences = new int[6][4];
-    	diags_sequences = new int[6][4];
-    	
+    	analytics = new ArrayList<>();
     	value = 0;
     	analizeBoard(state);
     	    	
-    	// For each index of rows, cols, diags
-		for (int i = 0; i < 6; i++) {
-			float[] rowScore = {0, 0}, colScore = {0, 0}, diagScore = {0, 0};
-			
-			// score_sequences for each rows_sequences[i] = {seqlength_w, seqlenth_b, #center_w, #center_b}
-	
-			
-			// White score
-			// Positive if player_id = 0 = white
-			// Negative otherwise
-			
-			// Center Scores
-			rowScore[0] += rows_sequences[i][2] * scores[player_id][1];
-			colScore[0] += cols_sequences[i][2] * scores[player_id][1];
-			diagScore[0] += diags_sequences[i][2] * scores[player_id][1];
-			
-			// Sequence Scores
-			int w_seq_length;
-			w_seq_length = Math.min(5, rows_sequences[i][0]);
-			rowScore[0] += scores[player_id][w_seq_length+1];
-			
-			w_seq_length = Math.min(5, cols_sequences[i][0]);
-			colScore[0] += scores[player_id][w_seq_length+1];
-			
-			w_seq_length = Math.min(5, diags_sequences[i][0]);
-			diagScore[0] += scores[player_id][w_seq_length+1];
-			
-			
-			// Black score
-			// Positive if player_id = 1 = black
-			// Negative otherwise
-			
-			// Center Scores
-			rowScore[1] += rows_sequences[i][3] * scores[1-player_id][1];
-			colScore[1] += cols_sequences[i][3] * scores[1-player_id][1];
-			diagScore[1] += diags_sequences[i][3] * scores[1-player_id][1];
-			
-			// Sequence Scores
-			int b_seq_length;
-			b_seq_length = Math.min(5, rows_sequences[i][1]);
-			rowScore[1] += scores[1-player_id][b_seq_length+1];
-			
-			b_seq_length = Math.min(5, cols_sequences[i][1]);
-			colScore[1] += scores[1-player_id][b_seq_length+1];
-			
-			b_seq_length = Math.min(5, diags_sequences[i][1]);
-			diagScore[1] += scores[1-player_id][b_seq_length+1];
-			
-			// score if we win
-			
-			value += (rowScore[0] + colScore[0] + diagScore[0]);
-			value += (rowScore[1] + colScore[1] + diagScore[1]);
-
-
+    	// For each rows, cols, diags
+    	for (LineAnalytics line : analytics) {
+			int score = line.getScore(player_id);	
+			value += score;
 		}
-		
+    	
 		return value;
 	}	
 	    
@@ -151,282 +71,349 @@ public class HeuristicFunction {
 	}
     
     private static void checkDiags(PentagoBoardState state) {
-    	// Diags 0, 1, 2
-    	// Diagonals from up to bottom
-    	// Diags 3, 4, 5
-    	// AntiDiagonals from up to bottom
-    	
-		Piece[] p_diag = new Piece[6];
-		Piece[] p_adiag = new Piece[6];
+    	Triplet[] dTriplets = new Triplet[4];
+    	Triplet[] adTriplets = new Triplet[4];
 		
-		for (int i = 0; i < 6; i++) {
-			p_diag[i] = state.getPieceAt(i, i);
-			p_adiag[i] = state.getPieceAt(5-i, i);  
+		int l = 0;
+    	for (int j = 0; j < 2; j++) {
+			for (int k = 0; k < 2; k++) {
+				dTriplets[l] = new Triplet(new Piece[]{
+					state.getPieceAt(2 + 3*j, 0 + 3*k), 
+					state.getPieceAt(1 + 3*j, 1 + 3*k), 
+					state.getPieceAt(0 + 3*j, 2 + 3*k)
+				});
+				
+				adTriplets[l] = new Triplet(new Piece[]{
+					state.getPieceAt(0 + 3*j, 0 + 3*k), 
+					state.getPieceAt(1 + 3*j, 1 + 3*k), 
+					state.getPieceAt(2 + 3*j, 2 + 3*k)
+				});
+				l++;
+			}	    	
 		}
-		
-		Sixplet s_diag = new Sixplet(p_diag);
-		s_diag.extractSequences(diags_sequences[1]);
-		
-		Sixplet s_adiag = new Sixplet(p_adiag);
-		s_adiag.extractSequences(diags_sequences[4]);
+    	
+    	// Compute analytics for black, white
+    	analytics.add(new LineAnalytics(dTriplets, 0, "diag", 1));
+       	analytics.add(new LineAnalytics(dTriplets, 1, "diag", 1));
+        
+       	analytics.add(new LineAnalytics(adTriplets, 0, "antidiag", 1));
+    	analytics.add(new LineAnalytics(adTriplets, 1, "antidiag", 1));
 	}
 
     private static void checkTrickyDiags(PentagoBoardState state) {
-    	Piece[] p_diag0 = new Piece[5];
-    	Piece[] p_diag1 = new Piece[5];
+    	// Tricky top diag 
+    	/*Piece[][] tdDuet = new Piece[4][2];
+    	Piece[] tdSolo = new Piece[4];
+    	
+    	// Tricky bottom diag 
+    	Piece[][] bdDuet = new Piece[4][2];
+    	Piece[] bdSolo = new Piece[4];
+    	
+    	// Tricky top adiag 
+    	Piece[][] tadDuet = new Piece[4][2];
+    	Piece[] tadSolo = new Piece[4];
+    	
+    	// Tricky bottom adiag 
+    	Piece[][] badDuet = new Piece[4][2];
+    	Piece[] badSolo = new Piece[4];
+    	
+    	int l = 0;
+    	for (int i = 0; i < 2; i++) {
+    		for (int j = 0; j < 2; j++) {
+	    		// Tricky top diag 
+	        	tdDuet[l] = new Piece[]{
+	        		state.getPieceAt(3*j, 1+3*i), 
+	        		state.getPieceAt(1+3*j, 2+3*i)
+	        	};
+	        	tdSolo[l] = state.getPieceAt(2+3*j, 3*i);
+	        	
+	        	// Tricky bottom diag 
+	        	bdDuet[l] = new Piece[]{
+	        		state.getPieceAt(1+3*j, 3*i), 
+	        		state.getPieceAt(2+3*j, 1+3*i)
+		        };
+	        	bdSolo[l] = state.getPieceAt(3*j, 2+3*i);
+	        	
+	        	// Tricky top adiag 
+	        	tadDuet[l] = new Piece[]{
+		        	state.getPieceAt(3*j, 1+3*i), 
+		        	state.getPieceAt(1+3*j, 3*i)
+			    };
+	        	tadSolo[l] = state.getPieceAt(2+3*j, 2+3*i);
+	        	
+	        	// Tricky bottom adiag 
+	        	badDuet[l] = new Piece[]{
+			    	state.getPieceAt(1+3*j, 2+3*i), 
+			    	state.getPieceAt(2+3*j, 1+3*i)
+				};
+	        	badSolo[l] = state.getPieceAt(1+3*j, 2+3*i);
+	        			
+	        	l++;
+	    	}
+    	}
+    	
+    	int[][] a = {
+			{1,2,3}, {0,2,3}, {0,1,3}, {0,1,2}
+		};
 		
-    	Piece[] p_adiag0 = new Piece[5];
-    	Piece[] p_adiag1 = new Piece[5];
-
-		for (int i = 0; i < 5; i++) {
-			p_diag0[i] = state.getPieceAt(i, i+1);
-			p_diag1[i] = state.getPieceAt(i+1, i);
-			
-			p_adiag0[i] = state.getPieceAt(4-i, i);
-			p_adiag1[i] = state.getPieceAt(5-i, i+1); 
+		List<List<Integer>> list = new ArrayList<>();
+		for (int i = 0; i < 4; i++) {
+			list.addAll(permute(a[i]));
 		}
-		
-		Quintuplet s_diag0 = new Quintuplet(p_diag0);
-		s_diag0.extractSequences(diags_sequences[0]);
-
-		Quintuplet s_diag1 = new Quintuplet(p_diag1);
-		s_diag1.extractSequences(diags_sequences[2]);
-
-		Quintuplet s_adiag0 = new Quintuplet(p_adiag0);
-		s_adiag0.extractSequences(diags_sequences[3]);  
-		
-		Quintuplet s_adiag1 = new Quintuplet(p_adiag1);
-		s_adiag1.extractSequences(diags_sequences[5]); 
+    	
+		for (int i = 0; i < 2; i++) {
+			for (int j = 0; j < list.size(); j++) {
+				List<Integer> n = list.get(j);
+				
+				analytics.add(new LineAnalytics(new Xplet(new Piece[]{
+					tdDuet[n.get(0)][0],
+					tdDuet[n.get(0)][1],
+					tdSolo[n.get(1)],
+					tdDuet[n.get(2)][0],
+					tdDuet[n.get(2)][1]		
+				}), i, "trickyDiagup", 1));
+				
+				analytics.add(new LineAnalytics(new Xplet(new Piece[]{
+					bdDuet[n.get(0)][0],
+					bdDuet[n.get(0)][1],
+					bdSolo[n.get(1)],
+					bdDuet[n.get(2)][0],
+					bdDuet[n.get(2)][1]	
+				}), i, "trickyDiagdown", 1));
+				
+				analytics.add(new LineAnalytics(new Xplet(new Piece[]{
+					tadDuet[n.get(0)][0],
+					tadDuet[n.get(0)][1],
+					tadSolo[n.get(1)],
+					tadDuet[n.get(2)][0],
+					tadDuet[n.get(2)][1]	
+				}), i, "trickyaDiagup", 1));
+				
+				analytics.add(new LineAnalytics(new Xplet(new Piece[]{
+					badDuet[n.get(0)][0],
+					badDuet[n.get(0)][1],
+					badSolo[n.get(1)],
+					badDuet[n.get(2)][0],
+					badDuet[n.get(2)][1]
+				}), i, "trickyaDiagdown", 1));
+			}
+		}*/
 	}
 
 	private static void checkCols(PentagoBoardState state) {
-		Piece[] pieces = new Piece[6];
+		Triplet[] triplets = new Triplet[4];
 		
-		for (int i = 0; i < 6; i++) {
-			for (int j = 0; j < 6; j++) {
-				pieces[j] = state.getPieceAt(j, i);
+		for (int i = 0; i < 3; i++) {
+			int l = 0;
+	    	for (int j = 0; j < 2; j++) {
+				for (int k = 0; k < 2; k++) {
+					triplets[l] = new Triplet(new Piece[]{
+						state.getPieceAt( 3*k, i + 3*j), 
+						state.getPieceAt(3*k + 1, i + 3*j), 
+						state.getPieceAt(3*k + 2, i + 3*j)
+					});
+					l++;
+				}	    	
 			}
-			
-			Sixplet s = new Sixplet(pieces);
-			s.extractSequences(cols_sequences[i]);  
+	    	
+	    	// Compute analytics for black, white
+	    	analytics.add(new LineAnalytics(triplets, 0, "col", i));
+	    	analytics.add(new LineAnalytics(triplets, 1, "col", i));
 		}
 	}
 
 	private static void checkRows(PentagoBoardState state) {
-		Piece[] pieces = new Piece[6];
+		Triplet[] triplets = new Triplet[4];
 		
-		for (int i = 0; i < 6; i++) {
-			for (int j = 0; j < 6; j++) {
-				pieces[j] = state.getPieceAt(i, j);
+		for (int i = 0; i < 3; i++) {
+			int l = 0;
+			for (int j = 0; j < 2; j++) {
+				for (int k = 0; k < 2; k++) {
+					triplets[l] = new Triplet(new Piece[]{
+						state.getPieceAt(i + 3*j, 3*k), 
+						state.getPieceAt(i + 3*j, 3*k + 1), 
+						state.getPieceAt(i + 3*j, 3*k + 2)
+					});
+					l++;
+				}	    	
 			}
-			
-			Sixplet s = new Sixplet(pieces);
-			s.extractSequences(rows_sequences[i]);  
+	    	
+	    	// Compute analytics for black, white
+	    	analytics.add(new LineAnalytics(triplets, 0, "row", i));
+	    	analytics.add(new LineAnalytics(triplets, 1, "row", i));
 		}
+	}
+	
+	public static List<List<Integer>> permute(int[] nums) {
+	    List<List<Integer>> result = new ArrayList<>();
+	    helper(0, nums, result);
+	    return result;
+	}
+	 
+	private static void helper(int start, int[] nums, List<List<Integer>> result){
+	    if(start==nums.length-1){
+	        ArrayList<Integer> list = new ArrayList<>();
+	        for(int num: nums){
+	            list.add(num);
+	        }
+	        result.add(list);
+	        return;
+	    }
+	 
+	    for(int i=start; i<nums.length; i++){
+	        swap(nums, i, start);
+	        helper(start+1, nums, result);
+	        swap(nums, i, start);
+	    }
+	}
+	 
+	private static void swap(int[] nums, int i, int j){
+	    int temp = nums[i];
+	    nums[i] = nums[j];
+	    nums[j] = temp;
 	}
 }
 
-class Quintuplet {
-	Piece[] quintuplet;
-	int[] count;
+class LineAnalytics {
+	String lineType;
+	int color;
+	int lineRank;
+	int centersCount;
+	int[] sequences;
 	
-	public Quintuplet(Piece[] pieces) {
-		if(pieces.length != 5) throw new IllegalArgumentException("You must pass 5 pieces to a quintuplet.");
-		quintuplet = pieces;
+	public LineAnalytics(Triplet[] triplets, int color, String lineType, int lineRank) {
+		this.lineType = lineType;
+		this.color = color;
+		this.lineRank = lineRank;
+		this.centersCount = 0;
+		this.sequences = new int[6];
 		
-		count = new int[2];
-		for (int i = 0; i < quintuplet.length; i++) {
-			if(quintuplet[i].toString().equals("w")) count[0] += 1;
-			if(quintuplet[i].toString().equals("b")) count[1] += 1;
+		analyze(triplets);
+	}
+	
+	public LineAnalytics(Xplet xplet, int color, String lineType, int lineRank) {
+		this.lineType = lineType;
+		this.color = color;
+		this.lineRank = lineRank;
+		this.centersCount = 0;
+		this.sequences = new int[6];
+		
+		analyze(xplet);
+	}
+	
+	public int getScore(int player_id) {
+		int score = 0 ;
+		
+		// Score positive if player_id = 0 = white
+		// Negative otherwise
+		// color == (1 - player_id)
+		int score_index = 0;
+		if(color != (1 - player_id)) score_index = 1;
+		
+		// Center Scores
+		score += centersCount * HeuristicFunction.scores[score_index][0];
+		// Sequence Scores
+
+		int max = 0;
+		for (int j = 0; j < sequences.length; j++) {
+			int seq_length = Math.min(5, sequences[j]);
+			if(seq_length > max) max = seq_length; 
 		}
-	}
-	
-	public void extractSequences(int[] sequences) {		
-		// Cannot make 5 in a row, ignore
-		if(getwCount() > 0 && getbCount() > 0) return;
+		if(max > 0) score += HeuristicFunction.scores[score_index][max];
 		
-		sequences[0] = getwCount();
-		sequences[1] = getbCount();	
+		return score;
 	}
 
-	int getwCount() {
-		return count[0];  
+	private void analyze(Xplet xplet) {
+		// Cannot make 5 in a row, ignore
+		if(xplet.getCount(color) > 0 && xplet.getCount(1-color) > 0) return;
+		sequences[0] = xplet.getCount(color);	
 	}
 	
-	int getbCount() {
-		return count[1]; 
-	}
-}
-
-class Sixplet {
-	Triplet t1, t2;
+	private void analyze(Triplet[] triplets) {	
+		ArrayList<Triplet> xxTriplets = new ArrayList<Triplet>();
+		ArrayList<Triplet> xxxTriplets = new ArrayList<Triplet>();
 	
-	public Sixplet(Piece[] pieces) {
-		if(pieces.length != 6) throw new IllegalArgumentException("You must pass 6 pieces to a sixplet.");
-		t1 = new Triplet(pieces[0], pieces[1], pieces[2]);
-		t2 = new Triplet(pieces[3], pieces[4], pieces[5]);
-	}
-	
-	public void extractSequences(int[] sequences) {
-		// Empty sixplet
-		if(getwCount() == 0 && getbCount() == 0) return;
-			
-		int wCentersCount = getwCentersCount();
-		int bCentersCount = getbCentersCount();
-		sequences[2] = wCentersCount;
-		sequences[3] = bCentersCount;
+		for (Triplet triplet : triplets) {
+			if(triplet.isValid(color)) {
+				if(triplet.getCount(1-color) == 0) {
+					xxxTriplets.add(triplet);
+				} else {
+					xxTriplets.add(triplet);
+				}
 				
-		// Cannot make 5 in a row, ignore
-		if(getwCount() > 1 && getbCount() > 1) return;
+				if(triplet.getCenter() == color) centersCount++;
+			}
+		}
 		
-		// If centers of different colors
-		// Blocking stone cannot be in the center, otherwise ignore
-		if(bCentersCount == 1 && wCentersCount == 1) return; 
+		// No triplets can give a sequence of 5
+		if(xxxTriplets.size() < 1) return;
+		if(xxxTriplets.size() + xxTriplets.size() < 2) return;
 		
-		if(getwCount() == 1 && getbCount() == 1) {
-			// If one stone in a center, it discards the other
-			if(wCentersCount == 1) {
-				sequences[0] += 1;
-			} else if(bCentersCount == 1) {
-				sequences[1] += 1;
-			} else {
-				// if they are both on the right/left position, they both count
-				sequences[0] += 1;
-				sequences[1] += 1;
+		int k = 0;
+		for (int i = 0; i < xxxTriplets.size(); i++) {
+			Triplet t3 = xxxTriplets.get(i);
+			
+			for (Triplet t2 : xxTriplets) {
+				sequences[k] = t3.getCount(color) + t2.getCount(color); 
+				k++;
 			}
 			
-			return;
-		}
-		
-		if(getwCount() > getbCount()) {
-			// color = white
-			// We have a white sequence
-			// Count consecutive color : getwCount(true)
-
-			//if(t1.getwCount() == 3 || t2.getwCount() == 3) {
-				sequences[0] = t1.getwCount(true) + t2.getwCount(true);
-				return;
-			/*} else {
-				sequences[0] = Math.max(t1.getwCount(true), t2.getwCount(true));
-			}*/
-		} else {
-			// color = black
-			// We have a black sequence
-			// Count consecutive color : getbCount(true)
-
-			if(t1.getbCount() == 3 || t2.getbCount() == 3) {
-				sequences[1] = t1.getbCount(true) + t2.getbCount(true);
+			for (int j = i + 1; j < xxxTriplets.size(); j++) {
+				Triplet t3bis = xxxTriplets.get(j);
 				
-				return;
-			} else {
-				sequences[1] = Math.max(t1.getbCount(true), t2.getbCount(true));
-			}
+				if(t3 != t3bis) {
+					sequences[k] = t3.getCount(color) + t3bis.getCount(color);
+					k++;
+				}
+			}	
 		}	
 	}
-	
-	private int getwCentersCount() {
-		int centersCount = 0;
-		
-		if(t1.getCenter().equals("w")) {
-			centersCount += 1;
-		}
-		
-		if(t2.getCenter().equals("w")) {
-			centersCount += 1;
-		}
-		
-		return centersCount;
-	}
-	
-	private int getbCentersCount() {
-		int centersCount = 0;
-		
-		if(t1.getCenter().equals("b")) {
-			centersCount += 1;
-		}
-		
-		if(t2.getCenter().equals("b")) {
-			centersCount += 1;
-		}
-		
-		return centersCount;
-	}
-
-	int getwCount() {
-		return t1.getwCount() + t2.getwCount();  
-	}
-	
-	int getbCount() {
-		return t1.getbCount() + t2.getbCount();
-	}
 }
 
-enum TripletValue {
-	___, 
-	b__, _b_, __b, bb_, b_b, _bb, bbb, 
-	bw_, b_w, bww, wb_, _bw, wbw, w_b,
-	_wb, wwb, bbw, bwb, wbb, 
-	w__, _w_, __w, ww_, w_w, _ww, www;
-}
-
-class Triplet {
-	Piece[] triplet;	
-	TripletValue tv;
+class Xplet {
+	Piece[] xplet;	
 	int[] count;
 	
-	public Triplet(Piece p1, Piece p2, Piece p3) {
-		triplet = new Piece[3];
-		
-		triplet[0] = p1;
-		triplet[1] = p2;
-		triplet[2] = p3;
-		
-		tv = TripletValue.valueOf("" 
-		+ p1.toString().replace(" ", "_") 
-		+ p2.toString().replace(" ", "_") 
-		+ p3.toString().replace(" ", "_"));
-		
+	public Xplet(Piece[] pieces) {
+		xplet = pieces;
+						
 		count = new int[2];
-		for (int i = 0; i < triplet.length; i++) {
-			if(triplet[i].toString().equals("w")) {
-				count[0] += 1;
-			}
-			if(triplet[i].toString().equals("b")) {
-				count[1] += 1;
-			}
+		for (int i = 0; i < xplet.length; i++) {
+			if(xplet[i].toString().equals("w")) count[1] += 1;
+			if(xplet[i].toString().equals("b")) count[0] += 1;
 		}
 	}
-	
-	TripletValue getTripletValue() {
-		return tv;
-	}
-	
-	int getwCount() {
-		return getwCount(false);
-	}
-	
-	int getwCount(boolean seq) {
-		if(seq && tv == TripletValue.valueOf("w_w")) return 1;
 		
-		return count[0];
-	}
-	
-	int getbCount() {
-		return getbCount(false);
-	}
-	
-	int getbCount(boolean seq) {
-		if(seq && tv == TripletValue.valueOf("b_b")) return 1;
-		
-		return count[1];
-	}
-	
-	String getCenter() {
-		return triplet[1].toString();
+	int getCount(int color) {
+		return count[color];
 	}
 		
 	@Override
 	public String toString() {
-		return triplet[0].toString() + triplet[1].toString() + triplet[2].toString();
+		String str = "";
+		for(int i = 0; i < xplet.length; i++) {
+			str = xplet[i].toString();
+		}
+		return str;
+	}
+}
+
+class Triplet extends Xplet{
+	int quadrant;
+	
+	public Triplet(Piece[] pieces) {
+		super(pieces);
+	}
+	
+	int getCenter() {
+		return xplet[1].ordinal();
+	}
+	
+	boolean isValid(int color) {
+		if(getCount(1 - color) == 0 
+		|| getCount(1 - color) == 1 && getCenter() != (1 - color)) return true;
+		
+		return false;
 	}
 }
