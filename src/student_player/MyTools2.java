@@ -2,15 +2,21 @@ package student_player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.function.ToIntFunction;
 
 import pentago_swap.PentagoBoardState;
+import pentago_swap.PentagoCoord;
 import pentago_swap.PentagoMove;
+import pentago_swap.PentagoBoardState.Piece;
+import pentago_swap.PentagoBoardState.Quadrant;
 
 public class MyTools2 {
+	static HashMap<String, PentagoBoardState> processedStates;
+	static HashMap<String, Integer> processedScores;
+			
 	public static <A> List<A> cloneList(List<A> list) {
 		List<A> copy = new ArrayList<>();
 		for (A a: list) {
@@ -57,42 +63,42 @@ public class MyTools2 {
 		return newState;
 	}
     
-	public static PentagoMove getMove(int player_id, PentagoBoardState state) {
+	public static PentagoMove getMove(int playerColor, PentagoBoardState state) {
+		processedStates = new HashMap<>();
+		processedScores = new HashMap<>();
+				
+		for (PentagoMove m : state.getAllLegalMoves()) {
+			
+			PentagoBoardState newState = (PentagoBoardState)state.clone();
+			newState.processMove(m);
+			processedStates.put(m.toPrettyString() + state.toString(), newState);
+			
+			if(newState.getWinner() == playerColor) {
+				return m;
+			}
+		}
+		
 		int depth = 2;
-		return MyTools2.minimax(player_id, state, depth).moves.get(0);
+		if(state.getTurnNumber() > 10) depth = 3;		
+		return MyTools2.minimax(playerColor, state, depth).moves.get(0);
 	}
     
-	public static MinimaxResult minimax(int player_id, PentagoBoardState state, int depth) {
-		ToIntFunction<PentagoBoardState> heuristic = state2 -> HeuristicFunction.compute(player_id, state2);
+	public static MinimaxResult minimax(int playerColor, PentagoBoardState state, int depth) {
+		ToIntFunction<PentagoBoardState> heuristic = state2 -> HeuristicFunction.compute(playerColor, state2);
 		MinimaxResult result = MyTools2.minimaxHelper(heuristic, true, depth, state, new ArrayList<PentagoMove>(), Integer.MIN_VALUE, Integer.MAX_VALUE);
 		
-		System.out.println("AB count:" + count);
+		System.out.println(result);
 		return result;
 	}
 	
-
-	static int count = 0;
 	private static MinimaxResult minimaxHelper(ToIntFunction<PentagoBoardState> heuristic, boolean isMaximizing, int depth, PentagoBoardState state, List<PentagoMove> previousMoves, int alpha, int beta) {		
 		List<PentagoMove> moves = state.getAllLegalMoves();
-		/*if (depth == 1) {
-			List<PentagoMove> moves = state.getAllLegalMoves();
-			//moves = MyTools2.randomSubList(2, allMoves);
-			for (PentagoMove move: allMoves) {
-				if (heuristic.applyAsInt(MyTools2.applyMove(move, state)) <= 1970) {
-					moves.add(move);
-				}
-				if (moves.size() >= 4) {
-					break;
-				}
-			}
-		} else {
-			moves = MyTools2.randomSubList(3, state.getAllLegalMoves());
-		}*/
-		//List<PentagoMove> moves = state.getAllLegalMoves();
-		
-		if (depth == 0 || moves.isEmpty()) {
-			MinimaxResult result = new MinimaxResult(heuristic.applyAsInt(state), state, MyTools2.cloneList(previousMoves));
-
+		if (depth == 0 || moves.isEmpty() || state.gameOver()) {	  
+			Integer score = processedScores.get(state.toString());
+			if(score == null) score = heuristic.applyAsInt(state);
+			MinimaxResult result = new MinimaxResult(score, state, MyTools2.cloneList(previousMoves));
+			
+			
 			/*
 			System.out.println("Depth:" + depth);
 			System.out.println(result);
@@ -103,12 +109,16 @@ public class MyTools2 {
 	    	
 	    } else {
 	    	MinimaxResult result = null;
-	    	for (PentagoMove move: moves) {
-	    		count++;
+	    	for (PentagoMove move: moves) { 	
 	    		List<PentagoMove> newMoves = MyTools2.cloneList(previousMoves);
 	    		newMoves.add(move);
-	    		PentagoBoardState newState = (PentagoBoardState)state.clone();
-	    		newState.processMove(move);
+	    		
+	    		PentagoBoardState newState = processedStates.get(move.toPrettyString() + state.toString());
+	    		if(newState == null) {
+		    		newState = (PentagoBoardState)state.clone();
+		    		newState.processMove(move);
+	    		}
+	    		
 	    		MinimaxResult newResult = MyTools2.minimaxHelper(heuristic, !isMaximizing, depth - 1, newState, newMoves, alpha, beta);
 	    		
 	    		if (result == null || (!isMaximizing && newResult.score < result.score) || (isMaximizing && newResult.score > result.score)) {
@@ -125,15 +135,40 @@ public class MyTools2 {
 	    		if(beta <= alpha) break;
 	    	}
 
-	    	/*
-			System.out.println("Depth:" + depth);
-			System.out.println(result);
-			System.out.println();
+	    	//*
+	    	if(depth == 2) {	
+	    		for (PentagoMove m : result.moves) {
+					if(m.toPrettyString().equals("Player 1, Move: (3, 0), Swap: (TL, BR)")) {
+						
+						System.out.println("--------------- yolo");
+			    		
+			    		System.out.println("Depth:" + depth);
+			    		System.out.println(result);
+			    		System.out.println("----------------yolo");
+			    		System.out.println();
+			    		
+					}
+	    		}
+	    	}
 	    	//*/
 	    	
 	    	return result;
 	    	
 	    }
+	}
+
+	public static List<PentagoMove> getPossibleMoves(PentagoBoardState state) {
+		List<PentagoMove> legalMoves = new ArrayList<>();
+	    for (int i = 0; i < PentagoBoardState.BOARD_SIZE; i++) { //Iterate through positions on board
+	        for (int j = 0; j < PentagoBoardState.BOARD_SIZE; j++) {
+	            if (state.getPieceAt(i, j) == Piece.EMPTY) {
+	            	
+	            	// Careful, default Quadrant values
+	            	legalMoves.add(new PentagoMove(i, j, Quadrant.TL, Quadrant.TR, state.getTurnPlayer()));
+	            }
+	        }
+	    }
+	    return legalMoves;
 	}
 }
 

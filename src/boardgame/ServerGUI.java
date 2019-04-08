@@ -40,7 +40,11 @@ public class ServerGUI extends JFrame implements BoardPanel.BoardPanelListener {
     protected static final String[] PLAYER_CLASSES = { 
     		"pentago_swap.RandomPentagoPlayer", 
     		"student_player.StudentPlayer",
-    		"adrien_student_player.StudentPlayer"
+    		"adrien_student_player.StudentPlayer",
+    		"adeeb_student_player.StudentPlayer",
+    		"xinyi_student_player.StudentPlayer",
+    		"alek_student_player.StudentPlayer",
+    		"old_student_player.StudentPlayer"
     };
     private static final int BOARD_SIZE = 800;
     private static final int LIST_WIDTH = 280;

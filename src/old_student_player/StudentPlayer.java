@@ -1,12 +1,13 @@
-package student_player;
+package old_student_player;
 
 import boardgame.Move;
-
 import pentago_swap.PentagoPlayer;
+import student_player.MyTools2;
 import pentago_swap.PentagoBoardState;
 
 /** A player file submitted by a student. */
 public class StudentPlayer extends PentagoPlayer {
+
     /**
      * You must modify this constructor to return your student number. This is
      * important, because this is what the code that runs the competition uses to

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import boardgame.Player;
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoBoardState.Piece;
 
@@ -23,29 +24,43 @@ public class HeuristicFunction {
 		{	
 			20,
 			5,
-			50,
-			200,
+			60,
+			500,
 			1500,
 			50000
 		},
 		{
 			-20,
 			-5,
-			-50,
-			-200,
-			-1500,
-			-50000
+			-60,
+			-600,
+			-1800,
+			-52000
 		}
 	};
 	
     static int value;
     static ArrayList<LineAnalytics> analytics;
 	   
-    static public int compute(int player_id, PentagoBoardState state) {	    	
+    static public int compute(int playerColor, PentagoBoardState state) {	    	
     	if(state.gameOver()) {
-    		if(state.getWinner() == player_id) return Integer.MAX_VALUE;
-        	if(state.getWinner() == (1-player_id)) return Integer.MIN_VALUE;
-        	
+    		
+    		if(state.getWinner() == playerColor) {
+    			//System.out.println(playerColor);
+    			//System.out.println("Win state");
+    			//System.out.println(state);
+    			return Integer.MAX_VALUE;
+    		}
+    		
+        	if(state.getWinner() == (1-playerColor)) {
+        		//System.out.println(playerColor);
+        		//System.out.println("Loose state");
+    			//System.out.println(state);
+    			
+        		return Integer.MIN_VALUE;
+        		
+        	}
+
         	// Draw
         	return 0;    
     	} 
@@ -56,7 +71,7 @@ public class HeuristicFunction {
     	    	
     	// For each rows, cols, diags
     	for (LineAnalytics line : analytics) {
-			int score = line.getScore(player_id);	
+			int score = line.getScore(playerColor);	
 			value += score;
 		}
     	
@@ -146,58 +161,93 @@ public class HeuristicFunction {
 			    	state.getPieceAt(1+3*j, 2+3*i), 
 			    	state.getPieceAt(2+3*j, 1+3*i)
 				};
-	        	badSolo[l] = state.getPieceAt(1+3*j, 2+3*i);
+	        	badSolo[l] = state.getPieceAt(3*j, 3*i);
 	        			
 	        	l++;
 	    	}
     	}
     	
-    	int[][] a = {
-			{1,2,3}, {0,2,3}, {0,1,3}, {0,1,2}
+    	int[][] list = {
+			{1,2,3},
+			{1,3,2},
+			{2,1,3},
+			
+			{0,2,3},
+			{0,3,2},
+			{2,0,3},
+			
+			{0,1,3},
+			{1,0,3},
+			{0,3,1},
+			
+			{0,1,2},
+			{1,0,2},
+			{0,2,1}
 		};
 		
-		List<List<Integer>> list = new ArrayList<>();
+		/*List<List<Integer>> list = new ArrayList<>();
 		for (int i = 0; i < 4; i++) {
 			list.addAll(permute(a[i]));
 		}
     	
 		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < list.size(); j++) {
-				List<Integer> n = list.get(j);
+			for (int j = 0; j < list.length; j++) {
+				int[] n = list[j];
 				
 				analytics.add(new LineAnalytics(new Xplet(new Piece[]{
-					tdDuet[n.get(0)][0],
-					tdDuet[n.get(0)][1],
-					tdSolo[n.get(1)],
-					tdDuet[n.get(2)][0],
-					tdDuet[n.get(2)][1]		
+					tdDuet[n[0]][0],
+					tdDuet[n[0]][1],
+					tdSolo[n[1]],
+					tdDuet[n[2]][0],
+					tdDuet[n[2]][1]		
 				}), i, "trickyDiagup", 1));
 				
 				analytics.add(new LineAnalytics(new Xplet(new Piece[]{
-					bdDuet[n.get(0)][0],
-					bdDuet[n.get(0)][1],
-					bdSolo[n.get(1)],
-					bdDuet[n.get(2)][0],
-					bdDuet[n.get(2)][1]	
+					bdDuet[n[0]][0],
+					bdDuet[n[0]][1],
+					bdSolo[n[1]],
+					bdDuet[n[2]][0],
+					bdDuet[n[2]][1]	
 				}), i, "trickyDiagdown", 1));
 				
 				analytics.add(new LineAnalytics(new Xplet(new Piece[]{
-					tadDuet[n.get(0)][0],
-					tadDuet[n.get(0)][1],
-					tadSolo[n.get(1)],
-					tadDuet[n.get(2)][0],
-					tadDuet[n.get(2)][1]	
+					tadDuet[n[0]][0],
+					tadDuet[n[0]][1],
+					tadSolo[n[1]],
+					tadDuet[n[2]][0],
+					tadDuet[n[2]][1]	
 				}), i, "trickyaDiagup", 1));
 				
 				analytics.add(new LineAnalytics(new Xplet(new Piece[]{
-					badDuet[n.get(0)][0],
-					badDuet[n.get(0)][1],
-					badSolo[n.get(1)],
-					badDuet[n.get(2)][0],
-					badDuet[n.get(2)][1]
+					badDuet[n[0]][0],
+					badDuet[n[0]][1],
+					badSolo[n[1]],
+					badDuet[n[2]][0],
+					badDuet[n[2]][1]
 				}), i, "trickyaDiagdown", 1));
 			}
 		}*/
+    	
+    	Piece[] p_diag0 = new Piece[5];
+    	Piece[] p_diag1 = new Piece[5];
+		
+    	Piece[] p_adiag0 = new Piece[5];
+    	Piece[] p_adiag1 = new Piece[5];
+
+		for (int i = 0; i < 5; i++) {
+			p_diag0[i] = state.getPieceAt(i, i+1);
+			p_diag1[i] = state.getPieceAt(i+1, i);
+			
+			p_adiag0[i] = state.getPieceAt(4-i, i);
+			p_adiag1[i] = state.getPieceAt(5-i, i+1); 
+		}
+		
+		for (int k = 0; k < 2; k++) {
+			analytics.add(new LineAnalytics(new Xplet(p_diag0), k, "col", 1));
+			analytics.add(new LineAnalytics(new Xplet(p_diag1), k, "col", 1));
+			analytics.add(new LineAnalytics(new Xplet(p_adiag0), k, "col", 1));
+			analytics.add(new LineAnalytics(new Xplet(p_adiag1), k, "col", 1));
+		}
 	}
 
 	private static void checkCols(PentagoBoardState state) {
@@ -244,7 +294,7 @@ public class HeuristicFunction {
 		}
 	}
 	
-	public static List<List<Integer>> permute(int[] nums) {
+	/*public static List<List<Integer>> permute(int[] nums) {
 	    List<List<Integer>> result = new ArrayList<>();
 	    helper(0, nums, result);
 	    return result;
@@ -271,7 +321,7 @@ public class HeuristicFunction {
 	    int temp = nums[i];
 	    nums[i] = nums[j];
 	    nums[j] = temp;
-	}
+	}*/
 }
 
 class LineAnalytics {
@@ -280,6 +330,7 @@ class LineAnalytics {
 	int lineRank;
 	int centersCount;
 	int[] sequences;
+	int[] sizes;
 	
 	public LineAnalytics(Triplet[] triplets, int color, String lineType, int lineRank) {
 		this.lineType = lineType;
@@ -287,6 +338,7 @@ class LineAnalytics {
 		this.lineRank = lineRank;
 		this.centersCount = 0;
 		this.sequences = new int[6];
+		this.sizes = new int[6];
 		
 		analyze(triplets);
 	}
@@ -297,6 +349,7 @@ class LineAnalytics {
 		this.lineRank = lineRank;
 		this.centersCount = 0;
 		this.sequences = new int[6];
+		this.sizes = new int[6];
 		
 		analyze(xplet);
 	}
@@ -315,11 +368,20 @@ class LineAnalytics {
 		// Sequence Scores
 
 		int max = 0;
+		int size = 0;
+		//int count = 0;
 		for (int j = 0; j < sequences.length; j++) {
 			int seq_length = Math.min(5, sequences[j]);
-			if(seq_length > max) max = seq_length; 
+			int seq_availableSize = sizes[j];
+			//if(seq_length == max) count++;
+			//if(seq_length > max) {
+				max = seq_length; 
+				size = seq_availableSize;
+				//count = 1;
+			//}
+			score += HeuristicFunction.scores[score_index][max] * (size-4);
 		}
-		if(max > 0) score += HeuristicFunction.scores[score_index][max];
+		//if(max > 0) score += HeuristicFunction.scores[score_index][max] * count;
 		
 		return score;
 	}
@@ -328,6 +390,7 @@ class LineAnalytics {
 		// Cannot make 5 in a row, ignore
 		if(xplet.getCount(color) > 0 && xplet.getCount(1-color) > 0) return;
 		sequences[0] = xplet.getCount(color);	
+		sizes[0] = 5;
 	}
 	
 	private void analyze(Triplet[] triplets) {	
@@ -356,6 +419,7 @@ class LineAnalytics {
 			
 			for (Triplet t2 : xxTriplets) {
 				sequences[k] = t3.getCount(color) + t2.getCount(color); 
+				sizes[k] = 5;
 				k++;
 			}
 			
@@ -364,6 +428,7 @@ class LineAnalytics {
 				
 				if(t3 != t3bis) {
 					sequences[k] = t3.getCount(color) + t3bis.getCount(color);
+					sizes[k] = 6;
 					k++;
 				}
 			}	
@@ -378,10 +443,11 @@ class Xplet {
 	public Xplet(Piece[] pieces) {
 		xplet = pieces;
 						
-		count = new int[2];
+		count = new int[3];
 		for (int i = 0; i < xplet.length; i++) {
 			if(xplet[i].toString().equals("w")) count[1] += 1;
 			if(xplet[i].toString().equals("b")) count[0] += 1;
+			if(xplet[i].toString().equals(" ")) count[2] += 1;
 		}
 	}
 		
