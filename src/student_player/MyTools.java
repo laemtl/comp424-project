@@ -1,7 +1,10 @@
 package student_player;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
+import java.util.function.ToIntFunction;
 
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoMove;
@@ -9,111 +12,187 @@ import pentago_swap.PentagoBoardState.Piece;
 import pentago_swap.PentagoBoardState.Quadrant;
 
 public class MyTools {
-	// Override of the core function to eliminate quadrant swapping
-	public static List<PentagoMove> getPossibleMoves(PentagoBoardState state) {
-		List<PentagoMove> legalMoves = new ArrayList<>();
-        for (int i = 0; i < PentagoBoardState.BOARD_SIZE; i++) { //Iterate through positions on board
-            for (int j = 0; j < PentagoBoardState.BOARD_SIZE; j++) {
-                if (state.getPieceAt(i, j) == Piece.EMPTY) {
-                	
-                	// Careful, default Quadrant values
-                	legalMoves.add(new PentagoMove(i, j, Quadrant.TL, Quadrant.TR, state.getTurnPlayer()));
-                }
-            }
-        }
-        return legalMoves;
-    }
+	static HashMap<String, PentagoBoardState> processedStates;
+	static HashMap<String, Integer> processedScores;
+			
+	public static <A> List<A> cloneList(List<A> list) {
+		List<A> copy = new ArrayList<>();
+		for (A a: list) {
+			copy.add(a);
+		}
+		return copy;
+	}
 	
-	// Returns the optimal value a maximizer can obtain. 
-	// depth is the limit depth in game tree. 
-	// isMax is true if current move is of maximizer
-    public static MiniMaxTree minimax(int depth, boolean isMax, PBSTree bsTree, int player_id) {
-    	
-    	// Terminating condition. i.e leaf node is reached or max depth reached
-	    if (depth == 0 || bsTree.getChildren().isEmpty()) {
-	    	int score = HeuristicFunction.compute(player_id, bsTree.getState());
-	    	MiniMaxTree treeCopy = new MiniMaxTree(player_id, bsTree, score);
-	    	treeCopy.setMove(null);
+	public static <A> List<A> randomSubList(int n, List<A> list) {
+		Random random = new Random();
+		List<A> subList = new ArrayList<>();
+		while (list.size() > 0 && subList.size() < n) {
+			int index = random.nextInt(list.size());
+			A a = list.get(index);
+			list.remove(index);
+			subList.add(a);
+		}
+		return subList;
+	}
+	
+	public static <A> List<A> subList(int n, List<A> list) {
+		List<A> subList = new ArrayList<>();
+		int index = 0;
+		while (list.size() > 0 && subList.size() < n) {
+			A a = list.get(index);
+			list.remove(index);
+			subList.add(a);
+			index+=5;
+		}
+		return subList;
+	}
+
+	public static String movesToString(List<PentagoMove> moves) {
+		String result = "";
+		for (PentagoMove move: moves) {
+			result += move.toPrettyString() + "\n";
+		}
+		return result;
+	}
+	
+	public static PentagoBoardState applyMove(PentagoMove move, PentagoBoardState state) {
+		PentagoBoardState newState = (PentagoBoardState)state.clone();
+		newState.processMove(move);
+		return newState;
+	}
+    
+	public static PentagoMove getMove(int playerColor, PentagoBoardState state) {
+		processedStates = new HashMap<>();
+		processedScores = new HashMap<>();
+				
+		for (PentagoMove m : state.getAllLegalMoves()) {
+			
+			PentagoBoardState newState = (PentagoBoardState)state.clone();
+			newState.processMove(m);
+			processedStates.put(m.toPrettyString() + state.toString(), newState);
+			
+			if(newState.getWinner() == playerColor) {
+				return m;
+			}
+		}
+		
+		int depth = 2;
+		if(state.getTurnNumber() > 10) depth = 3;		
+		return MyTools.minimax(playerColor, state, depth).moves.get(0);
+	}
+    
+	public static MinimaxResult minimax(int playerColor, PentagoBoardState state, int depth) {
+		ToIntFunction<PentagoBoardState> heuristic = state2 -> HeuristicFunction.compute(playerColor, state2);
+		MinimaxResult result = MyTools.minimaxHelper(heuristic, true, depth, state, new ArrayList<PentagoMove>(), Integer.MIN_VALUE, Integer.MAX_VALUE);
+		
+		System.out.println(result);
+		return result;
+	}
+	
+	private static MinimaxResult minimaxHelper(ToIntFunction<PentagoBoardState> heuristic, boolean isMaximizing, int depth, PentagoBoardState state, List<PentagoMove> previousMoves, int alpha, int beta) {		
+		List<PentagoMove> moves = state.getAllLegalMoves();
+		if (depth == 0 || moves.isEmpty() || state.gameOver()) {	  
+			Integer score = processedScores.get(state.toString());
+			if(score == null) score = heuristic.applyAsInt(state);
+			MinimaxResult result = new MinimaxResult(score, state, MyTools.cloneList(previousMoves));
+			
+			
+			/*
+			System.out.println("Depth:" + depth);
+			System.out.println(result);
+			System.out.println();
+			//*/
+			
+	    	return result;
 	    	
-	    	return treeCopy;
 	    } else {
-	    	List<MiniMaxTree> list = new ArrayList<>();
-		    for (PBSTree child : bsTree.getChildren()) {
-		    	MiniMaxTree childMiniMax = null;
-				childMiniMax = new MiniMaxTree(player_id, minimax(depth-1, !isMax, child, player_id));
-				childMiniMax.setMove(child.getMove());
-				list.add(childMiniMax);
-		    }
-		    
-		    if (isMax) {
-		    	MiniMaxTree max = null;
-			    for (MiniMaxTree child : list) {
-			    	if(depth == 2) {
-			    		//System.out.println("child score : " + child.getScore());
-			    		//System.out.println(child.getState());	
-		    		}	
-			    	if ( max == null || max.compareTo(child) < 0) {
-			    		max = child;
-			    	}
-			    }
-			    
-			    return max;
-			    
-		    } else {
-		    	MiniMaxTree min = null;
-			    for (MiniMaxTree child : list) {
-			    	//System.out.println("child score : " + child.getScore());
-			    	//System.out.println(child.getState());			
-		    		
-			    	if ( min == null || min.compareTo(child) > 0) {
-			    		min = child;
-			    	}
-			    }
-			    
-			    return min;
-		    }
+	    	MinimaxResult result = null;
+	    	for (PentagoMove move: moves) { 	
+	    		List<PentagoMove> newMoves = MyTools.cloneList(previousMoves);
+	    		newMoves.add(move);
+	    		
+	    		PentagoBoardState newState = processedStates.get(move.toPrettyString() + state.toString());
+	    		if(newState == null) {
+		    		newState = (PentagoBoardState)state.clone();
+		    		newState.processMove(move);
+	    		}
+	    		
+	    		MinimaxResult newResult = MyTools.minimaxHelper(heuristic, !isMaximizing, depth - 1, newState, newMoves, alpha, beta);
+	    		
+	    		if (result == null || (!isMaximizing && newResult.score < result.score) || (isMaximizing && newResult.score > result.score)) {
+	    			result = newResult.clone();
+	    		}
+	    		
+	    		// max case
+	    		if(isMaximizing) {
+	    			alpha = Math.max(alpha, result.score);
+	    		} else {
+	    			beta = Math.min(beta, result.score);
+	    		}
+	    		
+	    		if(beta <= alpha) break;
+	    	}
+
+	    	//*
+	    	if(depth == 2) {	
+	    		for (PentagoMove m : result.moves) {
+					if(m.toPrettyString().equals("Player 1, Move: (3, 0), Swap: (TL, BR)")) {
+						
+						System.out.println("--------------- yolo");
+			    		
+			    		System.out.println("Depth:" + depth);
+			    		System.out.println(result);
+			    		System.out.println("----------------yolo");
+			    		System.out.println();
+			    		
+					}
+	    		}
+	    	}
+	    	//*/
+	    	
+	    	return result;
+	    	
 	    }
 	}
 
-	public static PentagoMove getMove(int player_id, PentagoBoardState boardState) {
-				
-		// Save original out stream.
-		/*PrintStream originalOut = System.out;
-        
-        // Create a new file output stream.
-        PrintStream fileOut = null;
-		try {
-			fileOut = new PrintStream(boardgame.Server.log_dir + "/out.txt");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        
-        // Redirect standard out to file.
-        System.setOut(fileOut);*/
-        
-        
-        
-        
-		int depth = 2;
-		PBSTree bsTree = new PBSTree(boardState);
+	public static List<PentagoMove> getPossibleMoves(PentagoBoardState state) {
+		List<PentagoMove> legalMoves = new ArrayList<>();
+	    for (int i = 0; i < PentagoBoardState.BOARD_SIZE; i++) { //Iterate through positions on board
+	        for (int j = 0; j < PentagoBoardState.BOARD_SIZE; j++) {
+	            if (state.getPieceAt(i, j) == Piece.EMPTY) {
+	            	
+	            	// Careful, default Quadrant values
+	            	legalMoves.add(new PentagoMove(i, j, Quadrant.TL, Quadrant.TR, state.getTurnPlayer()));
+	            }
+	        }
+	    }
+	    return legalMoves;
+	}
+}
 
-		// If there is a winning move do it!
-		for (PBSTree child : bsTree.getChildren()) {
-			if(child.getState().getWinner() == player_id) return child.getMove();
-		}
-		
-		MiniMaxTree tree = minimax(depth, true, bsTree, player_id);
-		
-		// Some logic here to define the best swap
-		
-		System.out.println("selected score : " + tree.getScore());
-		System.out.println(tree.getState());			
-		System.out.println("Move : " + tree.getMove().getMoveCoord().getX() + " " + tree.getMove().getMoveCoord().getY());
-		
-		
-		return tree.getMove();
-		
-		
+class MinimaxResult {
+	int score;
+	List<PentagoMove> moves = new ArrayList<>();
+	/**
+	 * Represents the back propagated state
+	 */
+	PentagoBoardState state;
+	
+	public MinimaxResult(int score, PentagoBoardState state, List<PentagoMove> moves) {
+		this.score = score;
+		this.moves = moves;
+		this.state = state;
+	}
+	
+	public String toString() {
+		String result = "";
+		result += "Score:" + score + "\n";
+		result += MyTools.movesToString(moves) + "\n";
+		result += state.toString();
+		return result;
+	}
+	
+	public MinimaxResult clone() {
+		return new MinimaxResult(score, (PentagoBoardState)state.clone(), MyTools.cloneList(moves));
 	}
 }

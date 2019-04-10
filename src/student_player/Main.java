@@ -36,16 +36,20 @@ public class Main {
 			
 		//PentagoMove move = new PentagoMove(new PentagoCoord(1, 0), Quadrant.TL, Quadrant.BR, 0);
 		//state2.processMove(move);
-		System.out.println(state2);
-		int score3 = HeuristicFunction.compute(1, state2);
+		System.out.println(state1);
+		int score3 = HeuristicFunction.compute(0, state2);
 		System.out.println(score3);
 		
-		
-		//int score = Integer.MAX_VALUE;
-		//PentagoBoardState s_state = null;
-		
-		//ArrayList<PentagoMove> children = state2.getAllLegalMoves();
-		PentagoMove m = MyTools2.getMove(0, state2);
+		PentagoMove m = MyTools.getMove(0, state2);
 		state2.processMove(m);
+		
+		PentagoBoardState state3 = (PentagoBoardState) state1.clone();
+		PentagoMove m2 = new PentagoMove(new PentagoCoord(3, 1), Quadrant.TL, Quadrant.BR, 0);
+		state3.processMove(m2);
+		System.out.println(state3);
+		int score4 = HeuristicFunction.compute(0, state3);
+		System.out.println(score4);
+		
+		
 	}
 }

@@ -1,12 +1,6 @@
 package student_player;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
-import boardgame.Player;
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoBoardState.Piece;
 
