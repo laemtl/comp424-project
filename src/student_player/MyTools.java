@@ -61,10 +61,19 @@ public class MyTools {
 		return newState;
 	}
     
-	public static PentagoMove getMove(int playerColor, PentagoBoardState state) {
+	public static PentagoMove getMove(int playerColor, PentagoBoardState state) { 
 		processedStates = new HashMap<>();
 		processedScores = new HashMap<>();
-				
+		
+		if(state.getTurnNumber() == 1) {
+			Random r = new Random();
+			int max  = state.getAllLegalMoves().size();
+			int min = 0;
+			
+			int n = r.nextInt((max - min) + 1) + min;
+			return state.getAllLegalMoves().get(n);
+		}
+		
 		for (PentagoMove m : state.getAllLegalMoves()) {
 			
 			PentagoBoardState newState = (PentagoBoardState)state.clone();
@@ -77,7 +86,7 @@ public class MyTools {
 		}
 		
 		int depth = 2;
-		if(state.getTurnNumber() > 10) depth = 3;		
+		if(state.getTurnNumber() > 12) depth = 3;		
 		return MyTools.minimax(playerColor, state, depth).moves.get(0);
 	}
     

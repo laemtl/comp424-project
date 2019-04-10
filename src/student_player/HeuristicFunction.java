@@ -20,16 +20,18 @@ public class HeuristicFunction {
 			5,
 			60,
 			500,
-			1500,
-			50000
+			2500,
+			50000,
+			0	// bonus triplet (for row/col)
 		},
 		{
 			-20,
 			-5,
 			-60,
-			-600,
-			-1800,
-			-52000
+			-600,  // 2000
+			-3000, // 2200
+			-52000,
+			-4000	// bonus triplet (for row/col)
 		}
 	};
 	
@@ -111,7 +113,7 @@ public class HeuristicFunction {
 
     private static void checkTrickyDiags(PentagoBoardState state) {
     	// Tricky top diag 
-    	/*Piece[][] tdDuet = new Piece[4][2];
+    	Piece[][] tdDuet = new Piece[4][2];
     	Piece[] tdSolo = new Piece[4];
     	
     	// Tricky bottom diag 
@@ -178,12 +180,7 @@ public class HeuristicFunction {
 			{1,0,2},
 			{0,2,1}
 		};
-		
-		/*List<List<Integer>> list = new ArrayList<>();
-		for (int i = 0; i < 4; i++) {
-			list.addAll(permute(a[i]));
-		}
-    	
+		    	
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < list.length; j++) {
 				int[] n = list[j];
@@ -220,9 +217,9 @@ public class HeuristicFunction {
 					badDuet[n[2]][1]
 				}), i, "trickyaDiagdown", 1));
 			}
-		}*/
+		}
     	
-    	Piece[] p_diag0 = new Piece[5];
+    	/*Piece[] p_diag0 = new Piece[5];
     	Piece[] p_diag1 = new Piece[5];
 		
     	Piece[] p_adiag0 = new Piece[5];
@@ -237,11 +234,11 @@ public class HeuristicFunction {
 		}
 		
 		for (int k = 0; k < 2; k++) {
-			analytics.add(new LineAnalytics(new Xplet(p_diag0), k, "col", 1));
-			analytics.add(new LineAnalytics(new Xplet(p_diag1), k, "col", 1));
-			analytics.add(new LineAnalytics(new Xplet(p_adiag0), k, "col", 1));
-			analytics.add(new LineAnalytics(new Xplet(p_adiag1), k, "col", 1));
-		}
+			analytics.add(new LineAnalytics(new Xplet(p_diag0), k, "tdiag", 1));
+			analytics.add(new LineAnalytics(new Xplet(p_diag1), k, "tdiag", 1));
+			analytics.add(new LineAnalytics(new Xplet(p_adiag0), k, "tadiag", 1));
+			analytics.add(new LineAnalytics(new Xplet(p_adiag1), k, "tadiag", 1));
+		}*/
 	}
 
 	private static void checkCols(PentagoBoardState state) {
@@ -325,6 +322,7 @@ class LineAnalytics {
 	int centersCount;
 	int[] sequences;
 	int[] sizes;
+	int fullTriplet;
 	
 	public LineAnalytics(Triplet[] triplets, int color, String lineType, int lineRank) {
 		this.lineType = lineType;
@@ -333,6 +331,7 @@ class LineAnalytics {
 		this.centersCount = 0;
 		this.sequences = new int[6];
 		this.sizes = new int[6];
+		this.fullTriplet = 0;
 		
 		analyze(triplets);
 	}
@@ -344,6 +343,7 @@ class LineAnalytics {
 		this.centersCount = 0;
 		this.sequences = new int[6];
 		this.sizes = new int[6];
+		this.fullTriplet = 0;
 		
 		analyze(xplet);
 	}
@@ -369,12 +369,29 @@ class LineAnalytics {
 			int seq_availableSize = sizes[j];
 			//if(seq_length == max) count++;
 			//if(seq_length > max) {
-				max = seq_length; 
+				//max = seq_length; 
 				size = seq_availableSize;
 				//count = 1;
 			//}
-			score += HeuristicFunction.scores[score_index][max] * (size-4);
+			
+			// multiply by 2 if we have a blank space (size - 4 = 1 if size is 5, 2 if size = 6)
+			score += HeuristicFunction.scores[score_index][seq_length] * (size-4);
 		}
+		
+		// if pattern is not the tricky diagonal, add a bonus if we got a full triplet
+		if(lineType == "row" 
+		|| lineType == "col"
+		|| lineType == "diag"
+		|| lineType == "antidiag")
+			score += fullTriplet * HeuristicFunction.scores[score_index][6];
+		
+		// if pattern is diag give it less strength as rows/cols 
+		if(lineType == "diag" || lineType == "antidiag")
+			score *= 0.95;
+		
+		// if pattern is tdiag give it less strength as rows/cols 
+		if(lineType == "tdiag" || lineType == "tadiag")
+			score *= 0.9;
 		//if(max > 0) score += HeuristicFunction.scores[score_index][max] * count;
 		
 		return score;
@@ -395,6 +412,7 @@ class LineAnalytics {
 			if(triplet.isValid(color)) {
 				if(triplet.getCount(1-color) == 0) {
 					xxxTriplets.add(triplet);
+					if(triplet.getCount(color) == 3) this.fullTriplet++;
 				} else {
 					xxTriplets.add(triplet);
 				}
